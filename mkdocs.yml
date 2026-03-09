@@ -24,5 +24,6 @@ nav:
       - Tech Requirements: tech-requirements.md
       - Architecture Draft: architecture.md
       - Module Types: module-types.md
+      - Future Steps & Ideas: future-steps.md
   - ADR:
       - Overview: adr/README.md
