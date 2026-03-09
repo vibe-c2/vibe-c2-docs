@@ -6,7 +6,7 @@ This page defines RabbitMQ RPC contracts for implant/session sync between channe
 
 - Implant -> Channel input: only `id` + `encrypted_data`.
 - Channel wraps input and sends RPC request to core.
-- Core responds with `agent.sync_response` containing zero or more encrypted tasks.
+- Core responds with `outbound.agent_message` containing encrypted data (or empty encrypted envelope).
 - Channel returns response payload to implant/session over its native transport.
 
 ---
@@ -52,25 +52,20 @@ Core-side (RPC request envelope):
 
 ---
 
-## `agent.sync_response` (RPC response)
+## `outbound.agent_message` (RPC response)
 
-Purpose: core-to-channel response for the same `id`, optionally bundling pending outbound tasks.
+Purpose: core-to-channel response for the same `id`, carrying only encrypted outbound data.
 
 ### Envelope (v1)
 
 ```json
 {
   "message_id": "01JNX7D8H8QY3G6P2R4X1K8ABC",
-  "type": "agent.sync_response",
+  "type": "outbound.agent_message",
   "version": "1.0",
   "timestamp": "2026-03-09T21:05:12.690Z",
   "id": "s-2b77df",
-  "tasks": [
-    {
-      "task_id": "t-10045",
-      "encrypted_data": "U2FtcGxlRW5jcnlwdGVkQmxvYg=="
-    }
-  ],
+  "encrypted_data": "U2FtcGxlRW5jcnlwdGVkQmxvYg==",
   "meta": {
     "status": "ok",
     "trace_id": "tr-6fd92d8b"
@@ -80,23 +75,24 @@ Purpose: core-to-channel response for the same `id`, optionally bundling pending
 
 ### Response semantics
 
-- `tasks` may be empty.
-- Every task payload is opaque to channel.
-- Channel returns these encrypted blobs to implant/session.
+- Response exposes only one payload field: `encrypted_data`.
+- `encrypted_data` is opaque to channel.
+- When no work is pending, core returns an empty/no-op encrypted payload.
+- Channel relays `encrypted_data` to implant/session unchanged.
 
 ### Validation rules
 
 Channel-side (RPC response envelope):
-- Require `type == agent.sync_response`.
+- Require `type == outbound.agent_message`.
 - Require matching `id`.
-- Require `tasks` array (can be empty).
-- Treat each `tasks[*].encrypted_data` as opaque.
+- Require `encrypted_data` field.
+- Treat `encrypted_data` as opaque.
 
 ---
 
 ## Processing expectations
 
 - Channel sends `inbound.agent_message` RPC request per implant/session inbound message.
-- Core processes inbound payload and returns `agent.sync_response` in the same RPC exchange.
+- Core processes inbound payload and returns `outbound.agent_message` in the same RPC exchange.
 - Core decrypts/verifies inbound and encrypts outbound; channel never decrypts.
-- Core may return no tasks when queue is empty for that `id`.
+- Core may return an empty/no-op encrypted payload when no task is pending for that `id`.

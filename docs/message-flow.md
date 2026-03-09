@@ -30,7 +30,7 @@ sequenceDiagram
     IP-->>TR: Provider plaintext task(s)
     TR-->>CS: Normalized outbound plaintext
     CS->>CS: Encrypt outbound payload(s)
-    CS-->>MQ: RPC response agent.sync_response (tasks[] or empty)
+    CS-->>MQ: RPC response outbound.agent_message (encrypted_data)
     MQ-->>CH: Deliver RPC response
     CH-->>I: Return encrypted response payload
 ```
@@ -38,9 +38,9 @@ sequenceDiagram
 ## Delivery Semantics
 
 - Channel initiates RPC when implant/session sends inbound traffic.
-- Core always replies with `agent.sync_response`:
-  - `tasks` may be empty (no work), or
-  - contain one/many encrypted task blobs for the same `id`.
+- Core always replies with `outbound.agent_message`.
+- Response body exposed to channel is encrypted-only (`encrypted_data`).
+- If no work is available, core returns an empty/no-op encrypted payload.
 - No separate channel-consumed outbound task stream is required for this model.
 
 ## Notes
