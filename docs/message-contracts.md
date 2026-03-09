@@ -86,3 +86,50 @@ Core-side envelope validation (channel -> RabbitMQ -> core):
 - Core server treats `message_id` as idempotency key.
 - Core resolves context/key from `id`, then decrypts/verifies `encrypted_data`.
 - Translator/provider processing starts only after successful core decrypt.
+
+---
+
+## `outbound.task`
+
+Purpose: carry an encrypted task/command blob from core C2 to channel for delivery to implant/session.
+
+### Envelope (v1)
+
+```json
+{
+  "message_id": "01JNX7D8H8QY3G6P2R4X1K8ABC",
+  "type": "outbound.task",
+  "version": "1.0",
+  "timestamp": "2026-03-09T21:15:02.100Z",
+  "source": {
+    "module": "core-server",
+    "module_instance": "core-1",
+    "transport": "http",
+    "tenant": "default"
+  },
+  "id": "s-2b77df",
+  "encrypted_data": "U2FtcGxlRW5jcnlwdGVkQmxvYg==",
+  "meta": {
+    "priority": "normal",
+    "trace_id": "tr-98fa21"
+  }
+}
+```
+
+### Validation rules (v1)
+
+Core-side before publish:
+
+- Require `id` and `encrypted_data`.
+- Require `type == outbound.task`.
+
+Channel-side before delivery:
+
+- Reject if `id` or `encrypted_data` is missing.
+- Treat `encrypted_data` as opaque; do not decrypt/inspect.
+
+### Processing expectations
+
+- Core encrypts payload for target `id` and publishes `outbound.task`.
+- Channel delivers encrypted blob via transport-specific `pull` or `push` mechanics.
+- Implant/session decrypts and executes locally.

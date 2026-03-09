@@ -12,7 +12,8 @@ Channel modules provide transport paths between implants/sessions and the core C
 - Extract/maintain minimal routing metadata (`id` + channel context).
 - Treat implant payload as opaque encrypted blob (no decrypt/inspect).
 - Publish inbound messages/events to RabbitMQ for core processing.
-- Consume outbound encrypted task/response blobs from RabbitMQ and deliver them back to agents.
+- Consume outbound encrypted task/response blobs from RabbitMQ and deliver them back to agents/sessions.
+- Implement transport-specific outbound mechanics (`pull` polling or `push` delivery).
 - Handle transport-specific concerns (sessions, polling cadence, retries, rate limits).
 
 ### Examples

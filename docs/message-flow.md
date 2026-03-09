@@ -59,6 +59,17 @@ flowchart LR
     CH --> I
 ```
 
+## C2 -> Implant/Session Delivery (Outbound)
+
+1. `Core Server` creates a task/event for a target `id`.
+2. `Core Server` encrypts payload for that target context.
+3. `Core Server` publishes `outbound.task` with `id` + `encrypted_data`.
+4. `Channel Module` consumes `outbound.task` and performs transport delivery only.
+5. Delivery model depends on channel transport:
+   - `pull` channels: implant/session polls; channel returns pending encrypted blob.
+   - `push` channels: channel pushes encrypted blob when transport allows.
+6. Implant/session decrypts and executes; response returns as inbound encrypted blob.
+
 ## Notes
 
 - The logical conversation is `implant/session ↔ core C2`.
