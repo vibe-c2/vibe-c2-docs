@@ -12,8 +12,8 @@ Use this docs site to:
 
 ## First Milestones
 
-1. Finalize project scope.
-2. Approve technical requirements (functional + non-functional).
+1. Finalize modular project scope (core server + modules).
+2. Approve technical requirements (including RabbitMQ messaging and Compose deployment).
 3. Establish architecture baseline and ADR process.
 
 ## Structure

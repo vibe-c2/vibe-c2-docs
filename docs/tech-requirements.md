@@ -18,10 +18,23 @@
 - Agents must poll, execute tasks, and return results reliably.
 - The system must retain task history with timestamps.
 
-## FR-04: Auditability
+## FR-04: Modular Service Architecture
+
+- The system must provide a **core server** as the central orchestration/control component.
+- The system must support independent **modules** for capability-specific processing.
+- Modules must communicate through the shared message bus and remain independently deployable.
+
+## FR-05: RabbitMQ Messaging Backbone
+
+- Core server and modules must communicate over RabbitMQ channels/queues.
+- Queue topology must support routing by message type and module responsibility.
+- Critical message flows must support acknowledgements and retry/dead-letter behavior.
+
+## FR-06: Auditability
 
 - Security-relevant actions must be logged with actor, action, and time.
 - Logs must be queryable for incident investigation.
+- Module-originated actions must be traceable to message IDs/correlation IDs.
 
 ## Non-Functional Requirements
 
@@ -33,8 +46,9 @@
 
 ## NFR-02: Reliability
 
-- Teamserver target uptime: >= 99.5% for MVP environments.
-- Task state must survive process restarts.
+- Core server target uptime: >= 99.5% for MVP environments.
+- Task state and messaging state must survive process restarts.
+- Module failures should be isolated and must not crash unrelated services.
 
 ## NFR-03: Performance
 
@@ -49,7 +63,8 @@
 ## Constraints
 
 - Hosted documentation and CI/CD on GitHub.
-- Initial deployment should be simple and low-ops.
+- Runtime architecture is containerized and orchestrated with Docker Compose for MVP.
+- Messaging between core server and modules uses RabbitMQ.
 - Stack choices must prioritize fast iteration for MVP.
 
 ## Open Questions
