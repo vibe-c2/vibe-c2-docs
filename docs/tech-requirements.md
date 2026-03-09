@@ -34,8 +34,8 @@
 
 - Implant-to-C2 payloads must be encrypted at application level end-to-end.
 - Channel modules must not decrypt implant payloads.
-- Channel modules may process only routing metadata (for example: `implant_id`, `session_id`, channel metadata) and encrypted blobs.
-- Core C2 services must resolve key material using routing identifiers and perform decrypt/verify.
+- Channel modules may process only minimal routing metadata (`id`, channel metadata) and encrypted blobs.
+- Core C2 services must resolve key material/context using `id` and perform decrypt/verify.
 
 ## FR-07: Auditability
 

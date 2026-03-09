@@ -9,7 +9,7 @@ Channel modules provide communication paths between implants/agents and the core
 ### Responsibilities
 
 - Accept inbound agent traffic from a specific transport/platform.
-- Extract/maintain routing metadata (`implant_id`, `session_id`, channel context).
+- Extract/maintain minimal routing metadata (`id` + channel context).
 - Treat implant payload as opaque encrypted blob (no decrypt/inspect).
 - Publish inbound messages/events to RabbitMQ for core processing.
 - Consume outbound encrypted task/response blobs from RabbitMQ and deliver them back to agents.

@@ -15,9 +15,9 @@ sequenceDiagram
     participant IP as Implant Provider
 
     I->>CH: Beacon/check-in + encrypted blob
-    CH->>MQ: Publish inbound.agent_message (ids + blob)
+    CH->>MQ: Publish inbound.agent_message (id + encrypted_data)
     MQ->>CS: Deliver inbound.agent_message
-    CS->>CS: Resolve key by implant/session id
+    CS->>CS: Resolve context/key using id + decrypted payload type
     CS->>CS: Decrypt + verify payload
     CS->>TR: Pass plaintext message for normalization
     TR->>IP: Map implant/provider schema
@@ -30,12 +30,12 @@ sequenceDiagram
     IP-->>TR: Provider-specific plaintext command
     TR-->>CS: Normalized outbound plaintext
     CS->>CS: Encrypt command for implant/session
-    CS->>MQ: Publish outbound.task (ids + encrypted blob)
+    CS->>MQ: Publish outbound.task (id + encrypted_data)
     MQ->>CH: Deliver outbound.task
     CH-->>I: Deliver encrypted task blob
 
     I->>CH: Encrypted task result blob
-    CH->>MQ: Publish inbound.task_result (ids + blob)
+    CH->>MQ: Publish inbound.task_result (id + encrypted_data)
     MQ->>CS: Deliver inbound.task_result
     CS->>CS: Decrypt + verify result payload
     CS->>TR: Normalize response
@@ -61,7 +61,7 @@ flowchart LR
 
 ## Notes
 
-- `Channel` handles transport/session delivery and routing metadata only.
+- `Channel` handles transport delivery and minimal routing metadata (`id`) only.
 - `Channel` does not decrypt or inspect implant plaintext.
 - `Core Server` owns key resolution, decrypt/verify, encrypt/sign, orchestration, policy, persistence, and audit.
 - `Translator` handles language/model conversion after core decrypts payload.
