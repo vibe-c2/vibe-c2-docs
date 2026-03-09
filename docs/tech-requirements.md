@@ -32,9 +32,10 @@
 
 ## FR-06: Application-Layer Implant Encryption
 
-- Implant-to-C2 payloads must be encrypted at application level end-to-end.
+- Implant/session-to-C2 payloads must be encrypted at application level end-to-end.
 - Channel modules must not decrypt implant payloads.
 - Channel modules may process only minimal routing metadata (`id`, channel metadata) and encrypted blobs.
+- Channel modules act as transport-only relays and must not own C2 protocol semantics.
 - Core C2 services must resolve key material/context using `id` and perform decrypt/verify.
 
 ## FR-07: Auditability

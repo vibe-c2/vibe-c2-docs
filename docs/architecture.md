@@ -9,6 +9,13 @@
 - **Persistence Layer**: durable storage for users, agents, tasks, module state, and audit logs.
 - **Telemetry / Logging**: centralized collection of operational and security events.
 
+## Communication Ownership Model
+
+- The logical conversation is **implant/session ↔ core C2**.
+- A channel module is only a transport relay between implant/session and core C2.
+- Channel modules shuffle opaque encrypted blobs plus minimal routing metadata (`id`).
+- Channel modules are not protocol peers for implant business logic and must stay plaintext-blind.
+
 ## Communication Model
 
 - Modules do not call each other directly by default.

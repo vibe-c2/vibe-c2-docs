@@ -4,7 +4,7 @@ This page defines initial module categories in the Vibe C2 modular architecture.
 
 ## 1) Channel Modules
 
-Channel modules provide communication paths between implants/agents and the core C2 platform.
+Channel modules provide transport paths between implants/sessions and the core C2 platform.
 
 ### Responsibilities
 
@@ -27,6 +27,8 @@ Channel modules provide communication paths between implants/agents and the core
 
 - Keep transport logic isolated from business/tasking logic.
 - Channel modules are blind to implant plaintext by design.
+- Channel role is packet/blob shuffling + delivery reliability, not C2 semantics.
+- The real protocol peer is core C2, not the channel module.
 - Enforce per-channel authentication and abuse controls.
 - Expose channel health and queue lag metrics.
 

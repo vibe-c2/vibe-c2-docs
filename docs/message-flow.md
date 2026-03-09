@@ -1,6 +1,6 @@
-# Message Flow (Implant ↔ C2)
+# Message Flow (Implant/Session ↔ C2)
 
-This diagram documents how messages move between implants and the modular C2 stack.
+This diagram documents how messages move between implants/sessions and core C2, with channels acting as transport-only relays.
 
 ## End-to-End Sequence
 
@@ -61,8 +61,9 @@ flowchart LR
 
 ## Notes
 
+- The logical conversation is `implant/session ↔ core C2`.
 - `Channel` handles transport delivery and minimal routing metadata (`id`) only.
-- `Channel` does not decrypt or inspect implant plaintext.
+- `Channel` shuffles encrypted data and does not decrypt or inspect implant plaintext.
 - `Core Server` owns key resolution, decrypt/verify, encrypt/sign, orchestration, policy, persistence, and audit.
 - `Translator` handles language/model conversion after core decrypts payload.
 - `Implant Provider` handles implant family specifics (commands/build/capabilities).
