@@ -27,6 +27,8 @@
 ## FR-05: RabbitMQ Messaging Backbone
 
 - Core server and modules must communicate over RabbitMQ channels/queues.
+- Implant traffic between channel and core must use request/response RPC over RabbitMQ.
+- Core RPC response may include zero or more pending tasks for the same `id`.
 - Queue topology must support routing by message type and module responsibility.
 - Critical message flows must support acknowledgements and retry/dead-letter behavior.
 

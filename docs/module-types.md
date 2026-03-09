@@ -11,9 +11,9 @@ Channel modules provide transport paths between implants/sessions and the core C
 - Accept inbound agent traffic from a specific transport/platform.
 - Extract/maintain minimal routing metadata (`id` + channel context).
 - Treat implant payload as opaque encrypted blob (no decrypt/inspect).
-- Publish inbound messages/events to RabbitMQ for core processing.
-- Consume outbound encrypted task/response blobs from RabbitMQ and deliver them back to agents/sessions.
-- Implement transport-specific outbound mechanics (`pull` polling or `push` delivery).
+- Send inbound RPC request to core over RabbitMQ.
+- Wait for RPC response from core and relay returned encrypted tasks (or empty response) back to implant/session.
+- Implement transport-specific response delivery (`poll`/long-poll/webhook reply/etc.).
 - Handle transport-specific concerns (sessions, polling cadence, retries, rate limits).
 
 ### Examples
@@ -28,7 +28,7 @@ Channel modules provide transport paths between implants/sessions and the core C
 
 - Keep transport logic isolated from business/tasking logic.
 - Channel modules are blind to implant plaintext by design.
-- Channel role is packet/blob shuffling + delivery reliability, not C2 semantics.
+- Channel role is packet/blob shuffling + RPC relay reliability, not C2 semantics.
 - The real protocol peer is core C2, not the channel module.
 - Enforce per-channel authentication and abuse controls.
 - Expose channel health and queue lag metrics.

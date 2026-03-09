@@ -2,80 +2,50 @@
 
 This diagram documents how messages move between implants/sessions and core C2, with channels acting as transport-only relays.
 
-## End-to-End Sequence
+## RPC Sequence (Channel ↔ Core)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant I as Implant
+    participant I as Implant/Session
     participant CH as Channel Module
     participant MQ as RabbitMQ
     participant CS as Core Server (Key Owner)
     participant TR as Translator Module
     participant IP as Implant Provider
 
-    I->>CH: Beacon/check-in + encrypted blob
-    CH->>MQ: Publish inbound.agent_message (id + encrypted_data)
-    MQ->>CS: Deliver inbound.agent_message
-    CS->>CS: Resolve context/key using id + decrypted payload type
+    I->>CH: id + encrypted_data (beacon/result/check-in)
+    CH->>MQ: RPC request inbound.agent_message
+    MQ->>CS: Deliver RPC request
+    CS->>CS: Resolve context/key from id
     CS->>CS: Decrypt + verify payload
-    CS->>TR: Pass plaintext message for normalization
-    TR->>IP: Map implant/provider schema
-    IP-->>TR: Parsed result + capabilities
+    CS->>TR: Normalize payload
+    TR->>IP: Map provider schema
+    IP-->>TR: Parsed event
     TR-->>CS: Normalized C2 event
-    CS->>CS: Persist event + update state
+    CS->>CS: Persist/audit/update state
 
-    CS->>TR: Build task intent (C2-native)
-    TR->>IP: Convert to implant command
-    IP-->>TR: Provider-specific plaintext command
+    CS->>TR: Build pending tasks for id (if any)
+    TR->>IP: Convert task(s) to implant format
+    IP-->>TR: Provider plaintext task(s)
     TR-->>CS: Normalized outbound plaintext
-    CS->>CS: Encrypt command for implant/session
-    CS->>MQ: Publish outbound.task (id + encrypted_data)
-    MQ->>CH: Deliver outbound.task
-    CH-->>I: Deliver encrypted task blob
-
-    I->>CH: Encrypted task result blob
-    CH->>MQ: Publish inbound.task_result (id + encrypted_data)
-    MQ->>CS: Deliver inbound.task_result
-    CS->>CS: Decrypt + verify result payload
-    CS->>TR: Normalize response
-    TR-->>CS: C2 result model
-    CS->>CS: Persist result + audit log
+    CS->>CS: Encrypt outbound payload(s)
+    CS-->>MQ: RPC response agent.sync_response (tasks[] or empty)
+    MQ-->>CH: Deliver RPC response
+    CH-->>I: Return encrypted response payload
 ```
 
-## Responsibility Map
+## Delivery Semantics
 
-```mermaid
-flowchart LR
-    I[Implant] --> CH[Channel Module]
-    CH --> MQ[(RabbitMQ)]
-    MQ --> CS[Core Server]
-    CS --> TR[Translator]
-    TR --> IP[Implant Provider]
-    IP --> TR
-    TR --> CS
-    CS --> MQ
-    MQ --> CH
-    CH --> I
-```
-
-## C2 -> Implant/Session Delivery (Outbound)
-
-1. `Core Server` creates a task/event for a target `id`.
-2. `Core Server` encrypts payload for that target context.
-3. `Core Server` publishes `outbound.task` with `id` + `encrypted_data`.
-4. `Channel Module` consumes `outbound.task` and performs transport delivery only.
-5. Delivery model depends on channel transport:
-   - `pull` channels: implant/session polls; channel returns pending encrypted blob.
-   - `push` channels: channel pushes encrypted blob when transport allows.
-6. Implant/session decrypts and executes; response returns as inbound encrypted blob.
+- Channel initiates RPC when implant/session sends inbound traffic.
+- Core always replies with `agent.sync_response`:
+  - `tasks` may be empty (no work), or
+  - contain one/many encrypted task blobs for the same `id`.
+- No separate channel-consumed outbound task stream is required for this model.
 
 ## Notes
 
 - The logical conversation is `implant/session ↔ core C2`.
-- `Channel` handles transport delivery and minimal routing metadata (`id`) only.
-- `Channel` shuffles encrypted data and does not decrypt or inspect implant plaintext.
+- `Channel` handles transport and minimal routing metadata (`id`) only.
+- `Channel` shuffles encrypted data and does not decrypt or inspect plaintext.
 - `Core Server` owns key resolution, decrypt/verify, encrypt/sign, orchestration, policy, persistence, and audit.
-- `Translator` handles language/model conversion after core decrypts payload.
-- `Implant Provider` handles implant family specifics (commands/build/capabilities).
-- All inter-service traffic should carry `message_id` and `correlation_id`.
