@@ -22,8 +22,9 @@
 - Core server and modules communicate over RabbitMQ channels.
 - Implant-to-C2 payloads are application-layer encrypted end-to-end.
 - Channel modules do not decrypt implant payloads; they relay metadata + encrypted blobs.
-- Core<->channel interaction for implant traffic uses RabbitMQ RPC (`request -> response`).
-- On inbound request, core returns an encrypted outbound payload in the same RPC response (tasking may be embedded inside ciphertext).
+- Core exposes a dedicated channel sync HTTP endpoint (`POST /api/channel/sync`).
+- Channel->core implant traffic is request/response over HTTP.
+- On inbound request, core returns an encrypted outbound payload in the same HTTP response (tasking may be embedded inside ciphertext).
 - Only core C2 services hold decryption keys and perform decrypt/verify operations.
 - Messages should be schema-versioned and idempotent where possible.
 - Critical flows should use acknowledgements/retries and dead-letter queues.
