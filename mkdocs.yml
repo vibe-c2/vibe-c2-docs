@@ -1,8 +1,8 @@
 site_name: Vibe C2 Docs
 site_description: Product and technical documentation for the Vibe C2 project
-site_url: https://wooderan.github.io/vibe-c2-docs/
-repo_url: https://github.com/Wooderan/vibe-c2-docs
-repo_name: Wooderan/vibe-c2-docs
+site_url: https://vibe-c2.github.io/vibe-c2-docs/
+repo_url: https://github.com/vibe-c2/vibe-c2-docs
+repo_name: vibe-c2/vibe-c2-docs
 
 theme:
   name: mkdocs
