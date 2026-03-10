@@ -34,6 +34,7 @@ nav:
       - Message Flow: message-flow.md
       - Message Contracts: message-contracts.md
       - Channel Obfuscation Profiles: channel-obfuscation-profiles.md
+      - Golang Packages: golang-packages.md
       - Future Steps & Ideas: future-steps.md
   - ADR:
       - Overview: adr/README.md
