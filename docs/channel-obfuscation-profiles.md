@@ -34,61 +34,14 @@ A profile may also define reversible encoding/wrapping, for example:
 - Channel module owns runtime loading, validation, and execution of profiles.
 - Core C2 owns management UX/API and policy decisions.
 
-## YAML shape (example)
+## YAML Specification
 
-```yaml
-profile_id: http-profile-01
-channel_type: http
-enabled: true
-priority: 100
-version: 1
+YAML schema details are intentionally kept in a dedicated page:
 
-match:
-  transport: http
-  required_fields:
-    - location: header
-      key: X-Request-ID
-    - location: body
-      key: data
+- [Obfuscation Profile YAML Reference](channel-obfuscation-yaml-reference.md)
 
-mapping:
-  profile_id:
-    source: profile_id
-    target:
-      location: query
-      key: p
-    transform:
-      - type: base64url
-
-  id:
-    source: id
-    target:
-      location: header
-      key: X-Request-ID
-    transform:
-      - type: base64url
-
-  encrypted_data:
-    source: encrypted_data
-    target:
-      location: body
-      key: data
-    transform:
-      - type: base64
-
-  noise:
-    - location: query
-      key: v
-      value: "20260310"
-```
-
-Field notes:
-
-- `enabled`: profile participates in inbound matching.
-- `priority`: lower cost / higher confidence profiles should be attempted first.
-- no default profile concept: if hint is absent, channel brute-forces enabled profiles.
-- `match`: pre-filter criteria used to avoid full brute-force over all enabled profiles.
-- `mapping.profile_id`: where to read/write optional profile hint in transport payload.
+Use this page for architecture/behavioral concepts and matching model.
+Use the YAML reference page for exact profile file structure, field-level syntax, and examples.
 
 ## Runtime flow
 
