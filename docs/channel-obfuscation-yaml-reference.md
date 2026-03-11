@@ -115,35 +115,50 @@ Supported transform types (v1):
 - `replace` (`from`, `to` required)
 - `url_encode` / `url_decode`
 
-## Transformation examples (before/after)
+## Transformation examples (channel-centric direction)
+
+Rule:
+
+- **Inbound** (`implant -> channel`): channel applies transform list in **decode direction**.
+- **Outbound** (`channel -> implant`): channel applies transform list in **encode direction**.
 
 ### 1) `base64`
 
-Use case: put binary-like encrypted blobs into transport fields that expect ASCII-safe text.
+Use case: implant sends ASCII-safe payload; channel decodes to canonical value.
 
 ```yaml
 transform:
   - type: base64
 ```
 
-- before: `cipher_blob`
-- after: `Y2lwaGVyX2Jsb2I=`
+Inbound (decode in channel):
+- implant sent: `Y2lwaGVyX2Jsb2I=`
+- channel canonical value: `cipher_blob`
+
+Outbound (encode in channel):
+- channel canonical value: `resp:cipher_blob`
+- sent to implant: `cmVzcDpjaXBoZXJfYmxvYg==`
 
 ### 2) `base64url`
 
-Use case: carry payload in URL/query paths without `+` and `/` characters.
+Use case: implant/channel exchange data through URL-safe fields.
 
 ```yaml
 transform:
   - type: base64url
 ```
 
-- before: `hello/world`
-- after: `aGVsbG8vd29ybGQ`
+Inbound:
+- implant sent: `aGVsbG8vd29ybGQ`
+- channel canonical value: `hello/world`
+
+Outbound:
+- channel canonical value: `hello/world`
+- sent to implant: `aGVsbG8vd29ybGQ`
 
 ### 3) `prefix`
 
-Use case: add static marker for routing/identification in noisy transport payloads.
+Use case: implant prepends marker; channel strips by decode path.
 
 ```yaml
 transform:
@@ -151,12 +166,17 @@ transform:
     value: "tg:"
 ```
 
-- before: `abc123`
-- after: `tg:abc123`
+Inbound:
+- implant sent: `tg:abc123`
+- channel canonical value: `abc123`
+
+Outbound:
+- channel canonical value: `abc123`
+- sent to implant: `tg:abc123`
 
 ### 4) `suffix`
 
-Use case: append marker for parser hints or camouflage in expected formats.
+Use case: implant appends marker; channel strips by decode path.
 
 ```yaml
 transform:
@@ -164,12 +184,17 @@ transform:
     value: "::end"
 ```
 
-- before: `abc123`
-- after: `abc123::end`
+Inbound:
+- implant sent: `abc123::end`
+- channel canonical value: `abc123`
+
+Outbound:
+- channel canonical value: `abc123`
+- sent to implant: `abc123::end`
 
 ### 5) `replace`
 
-Use case: channel-specific character substitution to match allowed charset/patterns.
+Use case: implant applies character substitution; channel reverses it in decode path.
 
 ```yaml
 transform:
@@ -178,30 +203,30 @@ transform:
     to: "_"
 ```
 
-- before: `a/b/c`
-- after: `a_b_c`
+Inbound:
+- implant sent: `a_b_c`
+- channel canonical value: `a/b/c`
+
+Outbound:
+- channel canonical value: `a/b/c`
+- sent to implant: `a_b_c`
 
 ### 6) `url_encode` / `url_decode`
 
-Use case: safely embed payload into query parameters or form-like values.
+Use case: transport-safe payload in query/form-like fields.
 
 ```yaml
 transform:
   - type: url_encode
 ```
 
-- before: `a b&c=d`
-- after: `a+b%26c%3Dd`
+Inbound (channel decode counterpart):
+- implant sent: `a+b%26c%3Dd`
+- channel canonical value: `a b&c=d`
 
-Decode counterpart:
-
-```yaml
-transform:
-  - type: url_decode
-```
-
-- before: `a+b%26c%3Dd`
-- after: `a b&c=d`
+Outbound:
+- channel canonical value: `a b&c=d`
+- sent to implant: `a+b%26c%3Dd`
 
 ### Ordered chain example
 
@@ -212,9 +237,15 @@ transform:
   - type: base64url
 ```
 
-- before: `payload42`
-- after step1: `chan:payload42`
-- final: `Y2hhbjpwYXlsb2FkNDI`
+Inbound:
+- implant sent: `Y2hhbjpwYXlsb2FkNDI`
+- channel step1 (base64url decode): `chan:payload42`
+- channel step2 (prefix decode): `payload42`
+
+Outbound:
+- channel canonical value: `payload42`
+- encode step1 (prefix): `chan:payload42`
+- encode step2 (base64url): `Y2hhbjpwYXlsb2FkNDI`
 
 Optional:
 
