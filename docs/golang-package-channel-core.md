@@ -5,7 +5,7 @@ Repository: `https://github.com/vibe-c2/vibe-c2-golang-channel-core`
 ## Install
 
 ```bash
-go get github.com/vibe-c2/vibe-c2-golang-channel-core@v0.2.0
+go get github.com/vibe-c2/vibe-c2-golang-channel-core@v0.3.0
 ```
 
 ## Purpose
@@ -18,5 +18,5 @@ go get github.com/vibe-c2/vibe-c2-golang-channel-core@v0.2.0
 
 ## Current Status
 
-- released version: `v0.2.0`
+- released version: `v0.3.0`
 - integrated into first module: `vibe-c2-http-channel`

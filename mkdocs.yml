@@ -38,6 +38,8 @@ nav:
           - Overview: golang-packages.md
           - vibe-c2-golang-protocol: golang-package-protocol.md
           - vibe-c2-golang-channel-core: golang-package-channel-core.md
+          - vibe-c2-http-channel: golang-package-http-channel.md
+      - Channel Authoring (15 min): channel-authoring-15min.md
       - Future Steps & Ideas: future-steps.md
   - ADR:
       - Overview: adr/README.md
