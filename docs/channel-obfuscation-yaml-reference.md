@@ -1,111 +1,131 @@
 # Obfuscation Profile YAML Reference
 
-This page defines the canonical YAML format for channel obfuscation profiles.
+This page is the canonical YAML reference for channel obfuscation profiles.
 
-## Rule
+It follows the same structure as the main `Channel Obfuscation Profiles` page.
+
+## Rules
 
 - **One YAML file = one profile**.
-- Multi-profile arrays/wrappers in a single file are not allowed in example/profile repos.
+- Multi-profile arrays/wrappers in one file are not allowed.
 - There is **no default profile** behavior.
 
-## Required Fields
+## Canonical YAML Structure
 
 ```yaml
-profile_id: profile-http-body
+profile_id: http-profile-01
+channel_type: http
+enabled: true
+priority: 100
+version: 1
+
+match:
+  transport: http
+  required_fields:
+    - location: header
+      key: X-Request-ID
+    - location: body
+      key: data
+
+mapping:
+  profile_id:
+    source: profile_id
+    target:
+      location: query
+      key: p
+    transform:
+      - type: base64url
+
+  id:
+    source: id
+    target:
+      location: header
+      key: X-Request-ID
+    transform:
+      - type: base64url
+
+  encrypted_data:
+    source: encrypted_data
+    target:
+      location: body
+      key: data
+    transform:
+      - type: base64
+
+  noise:
+    - location: query
+      key: v
+      value: "20260310"
+```
+
+## Field Reference
+
+Top-level:
+
+- `profile_id` (required)
+- `channel_type` (required)
+- `enabled` (required)
+- `priority` (required)
+- `version` (optional)
+- `match` (optional but recommended)
+- `mapping` (required)
+
+`match`:
+
+- `transport` (optional)
+- `required_fields[]` (optional pre-filter checks)
+  - `location`: `header` | `query` | `cookie` | `body`
+  - `key`: field key/name
+
+`mapping`:
+
+- `profile_id` (optional)
+  - used to read/write hint
+- `id` (required)
+- `encrypted_data` (required)
+
+Each mapping entry supports:
+
+- `source`: canonical field name
+- `target.location`: `header` | `query` | `cookie` | `body`
+- `target.key`: transport key/name
+- `transform[]`: ordered transform list
+  - supported now: `base64`, `base64url`
+
+Optional:
+
+- `noise[]` static filler fields
+
+## Matching Model
+
+- If `profile_id` hint resolves to one enabled profile, use it.
+- Otherwise, brute-force enabled profiles using matching strategy.
+- If no profile matches, reject request as unmatched.
+
+## Validation Constraints
+
+For enabled profile sets in same channel scope:
+
+- no overlapping enabled `mapping.profile_id` hint keys
+- no overlapping enabled mapping shapes (`mapping.id` + `mapping.encrypted_data`)
+- use `match.required_fields` and unique hint design to minimize ambiguity
+
+## Minimal Practical Example
+
+```yaml
+profile_id: body-minimal
 channel_type: http
 enabled: true
 priority: 100
 mapping:
-  id: body:id
-  encrypted_data: body:encrypted_data
+  id:
+    source: id
+    target:
+      location: body
+      key: id
+  encrypted_data:
+    source: encrypted_data
+    target:
+      location: body
+      key: encrypted_data
 ```
-
-Required keys:
-
-- `profile_id`
-- `channel_type`
-- `enabled`
-- `priority`
-- `mapping.id`
-- `mapping.encrypted_data`
-
-Optional:
-
-- `mapping.profile_id` (hint mapping)
-
-## Mapping reference format
-
-`mapping.*` values use reference format:
-
-- `body:<field>`
-- `header:<name>`
-- `query:<name>`
-- `cookie:<name>`
-
-Examples:
-
-- `id: body:id`
-- `encrypted_data: header:X-Payload`
-- `id: query:agent`
-
-## Transform pipeline syntax
-
-Transforms can be appended with `|`:
-
-- `|base64`
-- `|base64url`
-
-Example:
-
-```yaml
-mapping:
-  id: body:id|base64
-  encrypted_data: body:encrypted_data|base64
-```
-
-Behavior:
-
-- inbound: channel decodes using listed transforms
-- outbound: channel encodes using same transforms
-
-## Hint-routed profile pattern
-
-Primary profile:
-
-```yaml
-profile_id: p1
-channel_type: http
-enabled: true
-priority: 200
-mapping:
-  profile_id: body:profile_id
-  id: body:id_field
-  encrypted_data: body:blob_field
-```
-
-Secondary profile (separate file):
-
-```yaml
-profile_id: p2
-channel_type: http
-enabled: true
-priority: 150
-mapping:
-  profile_id: body:profile_id
-  id: body:id2
-  encrypted_data: body:blob2
-```
-
-## Matching model
-
-- If `profile_id` hint is present and valid, use matching profile.
-- If hint is absent/invalid, brute-force all enabled profiles using matching strategy.
-- If nothing matches, reject request as unmatched profile.
-
-## Validation constraints
-
-For an enabled profile set in one channel scope:
-
-- no overlapping enabled `mapping.profile_id` hint keys
-- no overlapping enabled mapping shapes (`mapping.id` + `mapping.encrypted_data`)
-- enabled profiles should have hint mapping (`mapping.profile_id`) where possible to reduce ambiguity
