@@ -115,6 +115,107 @@ Supported transform types (v1):
 - `replace` (`from`, `to` required)
 - `url_encode` / `url_decode`
 
+## Transformation examples (before/after)
+
+### 1) `base64`
+
+Use case: put binary-like encrypted blobs into transport fields that expect ASCII-safe text.
+
+```yaml
+transform:
+  - type: base64
+```
+
+- before: `cipher_blob`
+- after: `Y2lwaGVyX2Jsb2I=`
+
+### 2) `base64url`
+
+Use case: carry payload in URL/query paths without `+` and `/` characters.
+
+```yaml
+transform:
+  - type: base64url
+```
+
+- before: `hello/world`
+- after: `aGVsbG8vd29ybGQ`
+
+### 3) `prefix`
+
+Use case: add static marker for routing/identification in noisy transport payloads.
+
+```yaml
+transform:
+  - type: prefix
+    value: "tg:"
+```
+
+- before: `abc123`
+- after: `tg:abc123`
+
+### 4) `suffix`
+
+Use case: append marker for parser hints or camouflage in expected formats.
+
+```yaml
+transform:
+  - type: suffix
+    value: "::end"
+```
+
+- before: `abc123`
+- after: `abc123::end`
+
+### 5) `replace`
+
+Use case: channel-specific character substitution to match allowed charset/patterns.
+
+```yaml
+transform:
+  - type: replace
+    from: "/"
+    to: "_"
+```
+
+- before: `a/b/c`
+- after: `a_b_c`
+
+### 6) `url_encode` / `url_decode`
+
+Use case: safely embed payload into query parameters or form-like values.
+
+```yaml
+transform:
+  - type: url_encode
+```
+
+- before: `a b&c=d`
+- after: `a+b%26c%3Dd`
+
+Decode counterpart:
+
+```yaml
+transform:
+  - type: url_decode
+```
+
+- before: `a+b%26c%3Dd`
+- after: `a b&c=d`
+
+### Ordered chain example
+
+```yaml
+transform:
+  - type: prefix
+    value: "chan:"
+  - type: base64url
+```
+
+- before: `payload42`
+- after step1: `chan:payload42`
+- final: `Y2hhbjpwYXlsb2FkNDI`
+
 Optional:
 
 - `noise[]` static filler fields
