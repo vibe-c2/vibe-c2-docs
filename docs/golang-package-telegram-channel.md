@@ -5,7 +5,7 @@ Repository: `https://github.com/vibe-c2/vibe-c2-telegram-channel`
 ## Install
 
 ```bash
-go get github.com/vibe-c2/vibe-c2-telegram-channel@latest
+go get github.com/vibe-c2/vibe-c2-telegram-channel@v0.2.0
 ```
 
 ## Config
@@ -71,3 +71,4 @@ ZW5jcnlwdGVkLXBheWxvYWQ=
 
 - This module is used as a stress test of channel-core package ecosystem.
 - Current transport mode is long polling (`getUpdates`).
+- Current release: `v0.2.0`.

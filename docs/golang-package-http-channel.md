@@ -5,12 +5,12 @@ Repository: `https://github.com/vibe-c2/vibe-c2-http-channel`
 ## Install
 
 ```bash
-go get github.com/vibe-c2/vibe-c2-http-channel@v0.3.0
+go get github.com/vibe-c2/vibe-c2-http-channel@v0.4.0
 ```
 
 ## Purpose
 
-- first production-ready channel module for Vibe C2
+- first production-ready channel module for Vibe C2 (`v0.4.0`)
 - receives implant/session traffic over HTTP
 - resolves obfuscation profile (`hint` -> `fallback`)
 - extracts canonical values from configurable locations (`body/header/query/cookie`)
