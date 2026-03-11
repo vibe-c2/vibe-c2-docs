@@ -7,7 +7,7 @@ This section tracks official Go packages in the Vibe C2 ecosystem.
 - [`vibe-c2-golang-protocol`](golang-package-protocol.md)
 - [`vibe-c2-golang-channel-core`](golang-package-channel-core.md)
 - [`vibe-c2-http-channel`](golang-package-http-channel.md)
-- `vibe-c2-telegram-channel` (new module, docs page pending)
+- [`vibe-c2-telegram-channel`](golang-package-telegram-channel.md)
 
 ## Package Relationship
 
