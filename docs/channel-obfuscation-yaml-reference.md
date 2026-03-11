@@ -2,7 +2,7 @@
 
 This page is the canonical YAML reference for channel obfuscation profiles.
 
-It follows the same structure as the main `Channel Obfuscation Profiles` page.
+It is intentionally self-contained and defines the complete YAML structure.
 
 ## Rules
 
