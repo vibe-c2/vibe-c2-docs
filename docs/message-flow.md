@@ -14,7 +14,7 @@ sequenceDiagram
     participant CS as Core Server
 
     I->>CH: transport message (obfuscated id + encrypted_data)
-    CH->>CH: resolve profile (hint -> fallback)
+    CH->>CH: resolve profile (hint -> brute-force enabled profiles)
     CH->>CH: de-obfuscate to canonical id + encrypted_data
     CH->>CS: POST /api/channel/sync (inbound.agent_message)
     CS-->>CH: HTTP 200 outbound.agent_message (encrypted_data)

@@ -34,7 +34,7 @@ Adopt a package ecosystem with clear separation of concerns:
 2. `vibe-c2-golang-channel-core` (channel runtime SDK)
    - runtime pipeline: transport -> de-obfuscate -> canonicalize -> sync -> re-obfuscate -> transport
    - profile engine (YAML parsing, semantic validation, overlap detection)
-   - profile selection strategy (`profile_id` hint first, cache/frequency optimization, fallback last)
+   - profile selection strategy (`profile_id` hint first, cache/frequency optimization, then brute-force enabled profiles)
    - sync client for `POST /api/channel/sync`
    - RabbitMQ RPC management surface for profile operations
    - telemetry hooks and typed error model
@@ -47,7 +47,7 @@ Adopt a package ecosystem with clear separation of concerns:
 - Channels never decrypt `encrypted_data`.
 - Canonical channel-core contract remains `id` + `encrypted_data`.
 - Obfuscation is transport shaping, not cryptographic replacement.
-- Exactly one enabled default fallback profile must exist per channel.
+- Profile selection must not depend on a default profile; use hint-first then brute-force enabled profiles.
 - Profile create/update operations must reject ambiguous overlap.
 
 ## Consequences
@@ -75,6 +75,6 @@ Adopt a package ecosystem with clear separation of concerns:
 Primary rollout phases:
 1. Protocol package contracts and validation baseline.
 2. Channel-core interfaces and skeleton.
-3. Profile engine + matcher + fallback strategy.
+3. Profile engine + matcher + brute-force strategy.
 4. Sync client + management RPC.
 5. Hardening, benchmarks, and examples.

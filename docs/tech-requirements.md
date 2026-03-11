@@ -46,7 +46,7 @@
 - Profiles must define mapping/obfuscation rules for `profile_id` (optional hint), `id`, and `encrypted_data` in transport fields.
 - Profiles must be persisted in storage as YAML documents.
 - Channel modules must expose RabbitMQ RPC management actions for profile CRUD/activation/validation.
-- Exactly one enabled default fallback profile must exist per channel.
+- Channel must brute-force all enabled profiles when hint is absent or invalid.
 
 ## FR-08: Obfuscation Match Resolution and Performance
 

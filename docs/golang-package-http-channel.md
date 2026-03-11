@@ -12,7 +12,7 @@ go get github.com/vibe-c2/vibe-c2-http-channel@v0.4.0
 
 - first production-ready channel module for Vibe C2 (`v0.4.0`)
 - receives implant/session traffic over HTTP
-- resolves obfuscation profile (`hint` -> `fallback`)
+- resolves obfuscation profile (`hint` -> brute-force enabled profiles)
 - extracts canonical values from configurable locations (`body/header/query/cookie`)
 - syncs with core C2 using channel-core runtime
 

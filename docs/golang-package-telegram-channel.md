@@ -63,7 +63,7 @@ ZW5jcnlwdGVkLXBheWxvYWQ=
 3. Channel behavior:
 
 - parses text to canonical values
-- resolves profile (`hint` -> `fallback`)
+- resolves profile (`hint` -> brute-force enabled profiles)
 - calls C2 sync endpoint via channel-core runtime
 - sends outbound encrypted response back to same chat
 
