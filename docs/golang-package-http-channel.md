@@ -74,6 +74,25 @@ mapping:
   encrypted_data: cookie:payload
 ```
 
+## Integration Testing
+
+`vibe-c2-http-channel` includes integration tests with an embedded `test-c2-core` simulator for `/api/channel/sync`.
+
+Covered scenarios:
+
+- `body` mapping
+- `header` mapping
+- `query` mapping
+- `cookie` mapping
+- transform pipeline (`base64` decode inbound + encode outbound)
+- ambiguous hint profile handling
+
+Run:
+
+```bash
+go test ./...
+```
+
 ## Notes
 
 - This channel is intentionally barrier-free for implant->channel communication.
