@@ -35,14 +35,14 @@ nav:
       - Message Flow: message-flow.md
       - Message Contracts: message-contracts.md
       - Channel Obfuscation Profiles: channel-obfuscation-profiles.md
-      - Golang Packages:
-          - Overview: golang-packages.md
-          - vibe-c2-golang-protocol: golang-package-protocol.md
-          - vibe-c2-golang-channel-core: golang-package-channel-core.md
-          - vibe-c2-http-channel: golang-package-http-channel.md
-          - vibe-c2-telegram-channel: golang-package-telegram-channel.md
-      - Channel Authoring (15 min): channel-authoring-15min.md
       - Future Steps & Ideas: future-steps.md
+  - Go Packages Ecosystem:
+      - Overview: golang-packages.md
+      - vibe-c2-golang-protocol: golang-package-protocol.md
+      - vibe-c2-golang-channel-core: golang-package-channel-core.md
+      - vibe-c2-http-channel: golang-package-http-channel.md
+      - vibe-c2-telegram-channel: golang-package-telegram-channel.md
+      - Channel Authoring (15 min): channel-authoring-15min.md
   - ADR:
       - Overview: adr/README.md
       - ADR-0001 Golang Channel Core Foundation: adr/0001-golang-channel-core-foundation.md
