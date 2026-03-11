@@ -115,12 +115,47 @@ Supported transform types (v1):
 - `replace` (`from`, `to` required)
 - `url_encode` / `url_decode`
 
+## Transformation chain order (authoritative)
+
+For a transform chain:
+
+```yaml
+transform:
+  - type: T1
+  - type: T2
+  - type: T3
+```
+
+Order semantics:
+
+- **Outbound** (`channel -> implant`): apply in listed order `T1 -> T2 -> T3`.
+- **Inbound** (`implant -> channel`): apply in reverse order `T3 -> T2 -> T1`.
+
+Think of it as function composition:
+
+- outbound value: `T3(T2(T1(canonical)))`
+- inbound value: `T1^-1(T2^-1(T3^-1(received)))`
+
+This is mandatory for deterministic roundtrip.
+
+### Mini example
+
+```yaml
+transform:
+  - type: prefix
+    value: "chan:"
+  - type: base64url
+```
+
+- outbound canonical `payload42`
+  1. prefix -> `chan:payload42`
+  2. base64url -> `Y2hhbjpwYXlsb2FkNDI`
+
+- inbound received `Y2hhbjpwYXlsb2FkNDI`
+  1. base64url decode -> `chan:payload42`
+  2. prefix decode -> `payload42`
+
 ## Transformation examples (channel-centric direction)
-
-Rule:
-
-- **Inbound** (`implant -> channel`): channel applies transform list in **decode direction**.
-- **Outbound** (`channel -> implant`): channel applies transform list in **encode direction**.
 
 ### 1) `base64`
 
