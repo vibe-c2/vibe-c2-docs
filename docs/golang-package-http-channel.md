@@ -39,6 +39,41 @@ curl -sS -X POST http://localhost:8080/sync \
   -d '{"profile_id":"default-http","id":"agent-1","encrypted_data":"ZW5jcnlwdGVk"}'
 ```
 
+## Profile Mapping Examples
+
+### Body mapping
+
+```yaml
+mapping:
+  profile_id: body:profile_id
+  id: body:id
+  encrypted_data: body:encrypted_data
+```
+
+### Header mapping
+
+```yaml
+mapping:
+  id: header:X-Agent-ID
+  encrypted_data: header:X-Payload
+```
+
+### Query mapping
+
+```yaml
+mapping:
+  id: query:agent
+  encrypted_data: query:data
+```
+
+### Cookie mapping
+
+```yaml
+mapping:
+  id: cookie:agent_id
+  encrypted_data: cookie:payload
+```
+
 ## Notes
 
 - This channel is intentionally barrier-free for implant->channel communication.
