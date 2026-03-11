@@ -13,49 +13,47 @@ It is intentionally self-contained and defines the complete YAML structure.
 ## Canonical YAML Structure
 
 ```yaml
-profile_id: http-profile-01
-channel_type: http
+profile_id: generic-profile-01
+channel_type: <channel-type>
 enabled: true
 priority: 100
 version: 1
 
 match:
-  transport: http
+  transport: <channel-type>
   required_fields:
-    - location: header
-      key: X-Request-ID
-    - location: body
-      key: data
+    - location: <channel-defined-location>
+      key: <field-key>
 
 mapping:
   profile_id:
     source: profile_id
     target:
-      location: query
-      key: p
+      location: <channel-defined-location>
+      key: <profile-hint-key>
     transform:
       - type: base64url
 
   id:
     source: id
     target:
-      location: header
-      key: X-Request-ID
+      location: <channel-defined-location>
+      key: <id-key>
     transform:
       - type: base64url
 
   encrypted_data:
     source: encrypted_data
     target:
-      location: body
-      key: data
+      location: <channel-defined-location>
+      key: <payload-key>
     transform:
       - type: base64
 
   noise:
-    - location: query
-      key: v
-      value: "20260310"
+    - location: <channel-defined-location>
+      key: <noise-key>
+      value: "<noise-value>"
 ```
 
 ## Field Reference
@@ -74,8 +72,8 @@ Top-level:
 
 - `transport` (optional)
 - `required_fields[]` (optional pre-filter checks)
-  - `location`: `header` | `query` | `cookie` | `body`
-  - `key`: field key/name
+  - `location`: **channel-defined location namespace** (string)
+  - `key`: field key/name in that location
 
 `mapping`:
 
@@ -87,7 +85,7 @@ Top-level:
 Each mapping entry supports:
 
 - `source`: canonical field name
-- `target.location`: `header` | `query` | `cookie` | `body`
+- `target.location`: **channel-defined location namespace** (string)
 - `target.key`: transport key/name
 - `transform[]`: ordered transform list
   - supported now: `base64`, `base64url`
@@ -95,6 +93,42 @@ Each mapping entry supports:
 Optional:
 
 - `noise[]` static filler fields
+
+## Channel-specific location namespaces
+
+Location namespace is channel-defined. Same schema, different location values.
+
+### HTTP channel example
+
+```yaml
+mapping:
+  id:
+    source: id
+    target:
+      location: header
+      key: X-Request-ID
+  encrypted_data:
+    source: encrypted_data
+    target:
+      location: body
+      key: data
+```
+
+### Telegram channel example
+
+```yaml
+mapping:
+  id:
+    source: id
+    target:
+      location: message
+      key: id
+  encrypted_data:
+    source: encrypted_data
+    target:
+      location: message
+      key: payload
+```
 
 ## Matching Model
 
