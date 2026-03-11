@@ -1,49 +1,37 @@
-# Message Flow (Implant/Session ↔ C2)
+# Channel Message Flow (Isolated)
 
-This diagram documents how messages move between implants/sessions and core C2, with channels acting as transport-only relays.
+This page documents **channel-only** flow and responsibilities.
 
-## HTTP Sync Sequence (Channel ↔ Core)
+It intentionally excludes internal core processing layers such as translators and implant providers.
+
+## Channel-Centric Sequence
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant I as Implant/Session
     participant CH as Channel Module
-    participant CS as Core Server (Key Owner)
-    participant TR as Translator Module
-    participant IP as Implant Provider
+    participant CS as Core Server
 
-    I->>CH: id + encrypted_data (beacon/result/check-in)
+    I->>CH: transport message (obfuscated id + encrypted_data)
+    CH->>CH: resolve profile (hint -> fallback)
+    CH->>CH: de-obfuscate to canonical id + encrypted_data
     CH->>CS: POST /api/channel/sync (inbound.agent_message)
-    CS->>CS: Resolve context/key from id
-    CS->>CS: Decrypt + verify payload
-    CS->>TR: Normalize payload
-    TR->>IP: Map provider schema
-    IP-->>TR: Parsed event
-    TR-->>CS: Normalized C2 event
-    CS->>CS: Persist/audit/update state
-
-    CS->>TR: Build outbound payload for id (if any)
-    TR->>IP: Convert to implant format
-    IP-->>TR: Provider plaintext payload
-    TR-->>CS: Normalized outbound plaintext
-    CS->>CS: Encrypt outbound payload (or no-op envelope)
     CS-->>CH: HTTP 200 outbound.agent_message (encrypted_data)
-    CH-->>I: Return encrypted response payload
+    CH->>CH: re-obfuscate response by active profile
+    CH-->>I: transport response (obfuscated id + encrypted_data)
 ```
 
-## Delivery Semantics
+## Channel Responsibilities
 
-- Channel initiates sync when implant/session sends inbound traffic.
-- Inbound transport data is de-obfuscated by channel into canonical fields (`id`, `encrypted_data`).
-- Core always replies with `outbound.agent_message`.
-- Response body exposed to channel is encrypted-only (`encrypted_data`).
-- Channel re-obfuscates canonical response fields using active profile before sending to implant/session.
-- If no work is available, core returns an empty/no-op encrypted payload.
+- Transport adaptation (HTTP/Telegram/etc.).
+- Obfuscation profile resolution and mapping.
+- Canonicalization to `id` + `encrypted_data`.
+- Forwarding canonical request to core sync endpoint.
+- Returning core response to implant/session in transport form.
 
-## Notes
+## Channel Boundaries
 
-- The logical conversation is `implant/session ↔ core C2`.
-- `Channel` handles transport and minimal routing metadata (`id`) only.
-- `Channel` shuffles encrypted data and does not decrypt or inspect plaintext.
-- `Core Server` owns key resolution, decrypt/verify, encrypt/sign, orchestration, policy, persistence, and audit.
+- Channel does **not** decrypt payload plaintext.
+- Channel does **not** execute core business logic.
+- Channel does **not** own translator/implant-provider semantics.

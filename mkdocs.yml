@@ -32,9 +32,10 @@ nav:
       - Architecture Draft: architecture.md
       - Core Responsibilities: core-responsibilities.md
       - Module Types: module-types.md
+      - Message Flow (Full System): message-flow-full.md
       - Future Steps & Ideas: future-steps.md
   - Channels:
-      - Message Flow: message-flow.md
+      - Message Flow (Channel Only): message-flow.md
       - Message Contracts: message-contracts.md
       - Channel Obfuscation Profiles: channel-obfuscation-profiles.md
       - Obfuscation Profile YAML Reference: channel-obfuscation-yaml-reference.md
