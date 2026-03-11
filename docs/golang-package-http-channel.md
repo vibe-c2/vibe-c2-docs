@@ -78,14 +78,15 @@ mapping:
 
 `vibe-c2-http-channel` includes integration tests with an embedded `test-c2-core` simulator for `/api/channel/sync`.
 
-Covered scenarios:
+Covered scenarios (driven by real profile examples in `examples/profiles/*.yaml`):
 
 - `body` mapping
 - `header` mapping
 - `query` mapping
 - `cookie` mapping
+- hint-routed profile selection
 - transform pipeline (`base64` decode inbound + encode outbound)
-- ambiguous hint profile handling
+- ambiguous profile-set rejection at parse/validation stage
 
 Run:
 
