@@ -27,7 +27,10 @@ A profile may also define reversible encoding/wrapping, for example:
 - optional channel-layer wrapping/encryption
 - padding/noise fields
 
-A profile also defines channel behavior through an `action` namespace object:
+A profile also defines channel behavior through an `action` namespace object.
+
+> **Status:** documentation-level specification (design target). Runtime implementation may lag behind spec.
+
 
 ```yaml
 action:

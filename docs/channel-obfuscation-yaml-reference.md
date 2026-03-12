@@ -4,6 +4,8 @@ This page is the canonical YAML reference for channel obfuscation profiles.
 
 It is intentionally self-contained and defines the complete YAML structure.
 
+> **Status:** this reference describes the target spec. Individual channel implementations may not support every field yet (for example `action`) until implementation catches up.
+
 ## Rules
 
 - **One YAML file = one profile**.
