@@ -25,6 +25,10 @@ match:
     - location: <channel-defined-location>
       key: <field-key>
 
+action:
+  type: <channel-defined-action-type>
+  params: <channel-defined-object>
+
 mapping:
   profile_id:
     source: profile_id
@@ -80,6 +84,7 @@ Top-level:
 - `priority` (required)
 - `version` (optional)
 - `match` (optional but recommended)
+- `action` (required)
 - `mapping` (required)
 
 `match`:
@@ -88,6 +93,13 @@ Top-level:
 - `required_fields[]` (optional pre-filter checks)
   - `location`: **channel-defined location namespace** (string)
   - `key`: field key/name in that location
+
+`action`:
+
+- `type` (required): **channel-defined behavior selector**
+- `params` (required): **channel-defined object**
+- evaluated only after profile match + canonical decode
+- does not change `mapping.transform[]` order semantics
 
 `mapping`:
 
@@ -114,6 +126,16 @@ Supported transform types (v1):
 - `suffix` (`value` required)
 - `replace` (`from`, `to` required)
 - `url_encode` / `url_decode`
+
+## Action execution semantics
+
+- Profile matching/decoding happens first.
+- After a profile matches, the channel executes `action.type` with `action.params`.
+- Typical actions:
+  - `http.process_sync`
+  - `http.redirect`
+  - `telegram.process`
+- Action behavior selection is channel-specific and independent from transform inversion rules.
 
 ## Transformation chain order (authoritative)
 
@@ -286,6 +308,97 @@ Optional:
 
 - `noise[]` static filler fields
 
+## Action examples
+
+### HTTP process/sync action
+
+```yaml
+profile_id: http-process-sync
+channel_type: http
+enabled: true
+priority: 100
+action:
+  type: http.process_sync
+  params:
+    sync_route: /api/v1/sync
+mapping:
+  id:
+    source: id
+    target:
+      location: header
+      key: X-Request-ID
+  encrypted_data_in:
+    source: encrypted_data
+    target:
+      location: body
+      key: data
+  encrypted_data_out:
+    source: encrypted_data
+    target:
+      location: body
+      key: data
+```
+
+### HTTP redirect action (to another channel/infra)
+
+```yaml
+profile_id: http-redirect-edge
+channel_type: http
+enabled: true
+priority: 90
+action:
+  type: http.redirect
+  params:
+    status_code: 302
+    location: https://edge-redirect.example.net/tunnel
+    target_channel: edge-http
+mapping:
+  id:
+    source: id
+    target:
+      location: query
+      key: rid
+  encrypted_data_in:
+    source: encrypted_data
+    target:
+      location: query
+      key: blob
+  encrypted_data_out:
+    source: encrypted_data
+    target:
+      location: query
+      key: blob
+```
+
+### Telegram process action
+
+```yaml
+profile_id: telegram-process-message
+channel_type: telegram
+enabled: true
+priority: 100
+action:
+  type: telegram.process
+  params:
+    update_kind: message
+mapping:
+  id:
+    source: id
+    target:
+      location: message
+      key: id
+  encrypted_data_in:
+    source: encrypted_data
+    target:
+      location: message
+      key: payload
+  encrypted_data_out:
+    source: encrypted_data
+    target:
+      location: message
+      key: payload
+```
+
 ## Channel-specific location namespaces
 
 Location namespace is channel-defined. Same schema, different location values.
@@ -293,6 +406,10 @@ Location namespace is channel-defined. Same schema, different location values.
 ### HTTP channel example
 
 ```yaml
+action:
+  type: http.process_sync
+  params:
+    sync_route: /api/v1/sync
 mapping:
   id:
     source: id
@@ -314,6 +431,10 @@ mapping:
 ### Telegram channel example
 
 ```yaml
+action:
+  type: telegram.process
+  params:
+    update_kind: message
 mapping:
   id:
     source: id
@@ -338,6 +459,7 @@ mapping:
 - Otherwise, brute-force enabled profiles using matching strategy.
 - If no profile matches, reject request as unmatched.
 - On successful match:
+  - `action` is resolved and executed first.
   - `encrypted_data_in` mapping is used for inbound decode path.
   - `encrypted_data_out` mapping is used for outbound encode path.
 
@@ -356,6 +478,10 @@ profile_id: body-minimal
 channel_type: http
 enabled: true
 priority: 100
+action:
+  type: http.process_sync
+  params:
+    sync_route: /api/v1/sync
 mapping:
   id:
     source: id

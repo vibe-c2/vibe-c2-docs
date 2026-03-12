@@ -27,6 +27,18 @@ A profile may also define reversible encoding/wrapping, for example:
 - optional channel-layer wrapping/encryption
 - padding/noise fields
 
+A profile also defines channel behavior through an `action` namespace object:
+
+```yaml
+action:
+  type: <channel-defined-action-type>
+  params: <channel-defined-object>
+```
+
+- `action.type` selects behavior after profile match and canonical decode.
+- `action.params` carries channel-defined parameters for that behavior.
+- `action` does not change transform ordering semantics in `mapping.transform`.
+
 ## Profile storage and ownership
 
 - Profiles are persisted in durable storage.
@@ -54,14 +66,54 @@ Inbound (implant/session -> channel -> core):
 5. Channel tries candidates in priority/frequency order.
 6. On first successful decode to canonical fields (`id`, `encrypted_data`), channel uses that profile.
 7. If no candidate succeeds, channel rejects request as unmatched profile.
-8. Channel sends canonical request to C2 sync endpoint only after successful match.
+8. After profile match, channel resolves and executes `action` from that profile.
+9. For process-style actions, channel sends canonical request to C2 sync endpoint after successful action resolution.
 
 Outbound (core -> channel -> implant/session):
 
 1. Channel receives canonical response (`outbound.agent_message`).
-2. Channel uses the inbound-resolved profile to re-embed/obfuscate transport payload.
+2. Channel uses the inbound-resolved profile and selected `action` to produce outbound transport behavior.
 3. Channel returns transport-shaped response to implant/session.
 4. Channel updates profile usage counters/cache for future ordering.
+
+## Action examples
+
+Concrete examples of channel-defined action types after profile match:
+
+### HTTP process/sync action
+
+```yaml
+action:
+  type: http.process_sync
+  params:
+    sync_route: /api/v1/sync
+```
+
+- Normal HTTP channel path: decode profile mapping, call C2 sync, then encode response.
+
+### HTTP redirect action (to another channel/infra)
+
+```yaml
+action:
+  type: http.redirect
+  params:
+    status_code: 302
+    location: https://edge-redirect.example.net/tunnel
+    target_channel: edge-http
+```
+
+- Returns redirect behavior to alternate channel infrastructure instead of local sync processing.
+
+### Telegram process action
+
+```yaml
+action:
+  type: telegram.process
+  params:
+    update_kind: message
+```
+
+- Uses Telegram channel processing flow after profile decode.
 
 ## Management model
 
