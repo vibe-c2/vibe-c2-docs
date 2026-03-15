@@ -5,80 +5,65 @@ Repository: `https://github.com/vibe-c2/vibe-c2-http-channel`
 ## Install
 
 ```bash
-go get github.com/vibe-c2/vibe-c2-http-channel@v0.4.0
+go get github.com/vibe-c2/vibe-c2-http-channel@v0.5.0
 ```
 
 ## Purpose
 
-- first production-ready channel module for Vibe C2 (`v0.4.0`)
-- receives implant/session traffic over HTTP
+- first production-ready HTTP channel module for Vibe C2
+- reads runtime config from env vars (with `.env` fallback)
+- loads obfuscation profiles from a watched folder
 - resolves obfuscation profile (`hint` -> brute-force enabled profiles)
-- extracts canonical values from configurable locations (`body/header/query/cookie`)
-- syncs with core C2 using channel-core runtime
+- supports object-based transform chains
+- supports combined inbound/outbound payload mapping
 
-## Quickstart
+## Runtime configuration
 
-1. Copy config templates:
+Environment variables:
 
-```bash
-cp configs/channel.example.yaml configs/channel.yaml
-cp configs/profiles.example.yaml configs/profiles.yaml
-```
+- `CHANNEL_ID` (default: `http-main`)
+- `LISTEN_ADDR` (default: `:8080`)
+- `C2_SYNC_BASE_URL` (default: `http://localhost:9000`)
+- `PROFILES_DIR` (default: `profiles`)
 
-2. Run channel:
-
-```bash
-CONFIG_FILE=configs/channel.yaml go run ./cmd/http-channel
-```
-
-3. Send test sync request:
+Run with `.env` fallback file path:
 
 ```bash
-curl -sS -X POST http://localhost:8080/sync \
-  -H 'Content-Type: application/json' \
-  -d '{"profile_id":"default-http","id":"agent-1","encrypted_data":"ZW5jcnlwdGVk"}'
+go run ./cmd/http-channel --config .env
 ```
 
-## Profile Mapping Examples
+## Profiles directory behavior
 
-### Body mapping
+On startup:
 
-```yaml
-mapping:
-  profile_id: body:profile_id
-  id: body:id
-  encrypted_data: body:encrypted_data
-```
+- creates `PROFILES_DIR` if missing
+- ensures `default.yaml` exists
+- if missing, copies from `examples/profiles/default.yaml`
 
-### Header mapping
+At runtime:
 
-```yaml
-mapping:
-  id: header:X-Agent-ID
-  encrypted_data: header:X-Payload
-```
+- watches `PROFILES_DIR` continuously
+- newly created profile files are loaded instantly
+- updated profile files are reloaded instantly
+- deleted profile files are unloaded instantly
 
-### Query mapping
+## Default profile behavior
 
-```yaml
-mapping:
-  id: query:agent
-  encrypted_data: query:data
-```
+Default profile (`default.yaml`) expects inbound body payload format:
 
-### Cookie mapping
+- raw body string = `base64(id+encrypted_data)`
 
-```yaml
-mapping:
-  id: cookie:agent_id
-  encrypted_data: cookie:payload
-```
+and returns outbound body payload format:
 
-## Integration Testing
+- raw body string = `base64(id+encrypted_data)`
+
+(with `id` and payload combined by configured separator).
+
+## Integration testing
 
 `vibe-c2-http-channel` includes integration tests with an embedded `test-c2-core` simulator for `/api/channel/sync`.
 
-Covered scenarios (driven by real profile examples in `examples/profiles/*.yaml`):
+Covered scenarios (example-driven from `examples/profiles/*.yaml`):
 
 - `body` mapping
 - `header` mapping
@@ -86,7 +71,8 @@ Covered scenarios (driven by real profile examples in `examples/profiles/*.yaml`
 - `cookie` mapping
 - hint-routed profile selection
 - transform pipeline (`base64` decode inbound + encode outbound)
-- ambiguous profile-set rejection at parse/validation stage
+- ambiguous profile-set rejection
+- default combined profile (`raw body base64(id+encrypted_data)`)
 
 Run:
 
@@ -96,5 +82,5 @@ go test ./...
 
 ## Notes
 
-- This channel is intentionally barrier-free for implant->channel communication.
+- This channel is intentionally barrier-free for implant -> channel communication.
 - Security boundaries are expected at transport/infrastructure layers outside this module.

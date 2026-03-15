@@ -66,9 +66,24 @@ mapping:
       location: <channel-defined-location>
       key: <payload-out-key>
     transform:
-      - type: prefix
-        value: "out:"
       - type: base64
+
+  # optional grouped mapping style
+  combined_in:
+    target:
+      location: <channel-defined-location>
+      key: <group-in-key>
+    transform:
+      - type: base64
+    separator: "+"
+
+  combined_out:
+    target:
+      location: <channel-defined-location>
+      key: <group-out-key>
+    transform:
+      - type: base64
+    separator: "+"
 
   noise:
     - location: <channel-defined-location>
@@ -108,10 +123,14 @@ Top-level:
 - `profile_id` (optional)
   - used to read/write hint
 - `id` (required)
-- `encrypted_data_in` (required)
+- `encrypted_data_in` (required unless `combined_in` is used)
   - inbound encrypted payload mapping (implant -> channel -> c2)
-- `encrypted_data_out` (required)
+- `encrypted_data_out` (required unless `combined_out` is used)
   - outbound encrypted payload mapping (c2 -> channel -> implant)
+- `combined_in` (optional)
+  - grouped inbound extraction (for payloads like `base64(id+encrypted_data)`)
+- `combined_out` (optional)
+  - grouped outbound rendering
 
 Each mapping entry supports:
 
@@ -119,6 +138,7 @@ Each mapping entry supports:
 - `target.location`: **channel-defined location namespace** (string)
 - `target.key`: transport key/name
 - `transform[]`: ordered transform object list
+- `separator` (combined fields only): delimiter for grouped values (default recommended: `+`)
 
 Supported transform types (v1):
 
@@ -462,28 +482,28 @@ mapping:
 - If no profile matches, reject request as unmatched.
 - On successful match:
   - `action` is resolved and executed first.
-  - `encrypted_data_in` mapping is used for inbound decode path.
-  - `encrypted_data_out` mapping is used for outbound encode path.
+  - Inbound decode path uses `combined_in` if configured, otherwise `encrypted_data_in` + `id` field mappings.
+  - Outbound encode path uses `combined_out` if configured, otherwise `encrypted_data_out` mapping.
 
 ## Validation Constraints
 
 For enabled profile sets in same channel scope:
 
 - no overlapping enabled `mapping.profile_id` hint keys
-- no overlapping enabled mapping shapes (`mapping.id` + `mapping.encrypted_data_in`)
+- no overlapping enabled mapping shapes (`mapping.id` + `mapping.encrypted_data_in`, or `mapping.combined_in`)
 - use `match.required_fields` and unique hint design to minimize ambiguity
 
-## Minimal Practical Example
+## Minimal Practical Example (combined body)
 
 ```yaml
-profile_id: body-minimal
+profile_id: default
 channel_type: http
 enabled: true
 priority: 100
 action:
   type: http.process_sync
   params:
-    sync_route: /api/v1/sync
+    sync_route: /api/channel/sync
 mapping:
   id:
     source: id
@@ -500,4 +520,18 @@ mapping:
     target:
       location: body
       key: encrypted_data
+  combined_in:
+    target:
+      location: body
+      key: ""
+    transform:
+      - type: base64
+    separator: "+"
+  combined_out:
+    target:
+      location: body
+      key: ""
+    transform:
+      - type: base64
+    separator: "+"
 ```

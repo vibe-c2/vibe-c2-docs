@@ -5,7 +5,7 @@ Repository: `https://github.com/vibe-c2/vibe-c2-golang-channel-core`
 ## Install
 
 ```bash
-go get github.com/vibe-c2/vibe-c2-golang-channel-core@v0.4.0
+go get github.com/vibe-c2/vibe-c2-golang-channel-core@v0.6.0
 ```
 
 ## Purpose
@@ -18,5 +18,6 @@ go get github.com/vibe-c2/vibe-c2-golang-channel-core@v0.4.0
 
 ## Current Status
 
-- released version: `v0.4.0`
-- integrated into first modules: `vibe-c2-http-channel`, `vibe-c2-telegram-channel`
+- released version: `v0.6.0`
+- includes object-based transforms and `combined_in`/`combined_out` mapping support
+- integrated into channel modules: `vibe-c2-http-channel`, `vibe-c2-telegram-channel`
