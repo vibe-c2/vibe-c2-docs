@@ -15,7 +15,7 @@ go get github.com/vibe-c2/vibe-c2-http-channel@v0.5.0
 - loads obfuscation profiles from a watched folder
 - resolves obfuscation profile (`hint` -> brute-force enabled profiles)
 - supports object-based transform chains
-- supports combined inbound/outbound payload mapping
+- supports `custom_mapping` inbound/outbound grouped payload mapping
 
 ## Runtime configuration
 
@@ -49,7 +49,7 @@ At runtime:
 
 ## Default profile behavior
 
-Default profile (`default.yaml`) expects inbound body payload format:
+Default profile (`default.yaml`) expects inbound body payload format (via `custom_mapping` + `position` grouping):
 
 - raw body string = `base64(id+encrypted_data)`
 
@@ -57,7 +57,7 @@ and returns outbound body payload format:
 
 - raw body string = `base64(id+encrypted_data)`
 
-(with `id` and payload combined by configured separator).
+(with `id` and payload grouped by configured separator and position).
 
 ## Integration testing
 
@@ -72,7 +72,7 @@ Covered scenarios (example-driven from `examples/profiles/*.yaml`):
 - hint-routed profile selection
 - transform pipeline (`base64` decode inbound + encode outbound)
 - ambiguous profile-set rejection
-- default combined profile (`raw body base64(id+encrypted_data)`)
+- default `custom_mapping` profile (`raw body base64(id+encrypted_data)`)
 
 Run:
 

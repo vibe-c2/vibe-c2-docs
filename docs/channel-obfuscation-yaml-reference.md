@@ -68,22 +68,36 @@ mapping:
     transform:
       - type: base64
 
-  # optional grouped mapping style
-  combined_in:
-    target:
-      location: <channel-defined-location>
-      key: <group-in-key>
-    transform:
-      - type: base64
-    separator: "+"
-
-  combined_out:
-    target:
-      location: <channel-defined-location>
-      key: <group-out-key>
-    transform:
-      - type: base64
-    separator: "+"
+  # optional grouped mapping behavior
+  custom_mapping:
+    inbound:
+      target:
+        location: <channel-defined-location>
+        key: <group-in-key>
+      transform:
+        - type: base64
+      grouping:
+        type: position
+        separator: "+"
+        fields:
+          - source: id
+            position: 0
+          - source: encrypted_data
+            position: 1
+    outbound:
+      target:
+        location: <channel-defined-location>
+        key: <group-out-key>
+      transform:
+        - type: base64
+      grouping:
+        type: position
+        separator: "+"
+        fields:
+          - source: id
+            position: 0
+          - source: encrypted_data
+            position: 1
 
   noise:
     - location: <channel-defined-location>
@@ -123,14 +137,12 @@ Top-level:
 - `profile_id` (optional)
   - used to read/write hint
 - `id` (required)
-- `encrypted_data_in` (required unless `combined_in` is used)
+- `encrypted_data_in` (required)
   - inbound encrypted payload mapping (implant -> channel -> c2)
-- `encrypted_data_out` (required unless `combined_out` is used)
+- `encrypted_data_out` (required)
   - outbound encrypted payload mapping (c2 -> channel -> implant)
-- `combined_in` (optional)
-  - grouped inbound extraction (for payloads like `base64(id+encrypted_data)`)
-- `combined_out` (optional)
-  - grouped outbound rendering
+- `custom_mapping` (optional)
+  - grouped transport parse/render behavior built from canonical fields
 
 Each mapping entry supports:
 
@@ -138,7 +150,19 @@ Each mapping entry supports:
 - `target.location`: **channel-defined location namespace** (string)
 - `target.key`: transport key/name
 - `transform[]`: ordered transform object list
-- `separator` (combined fields only): delimiter for grouped values (default recommended: `+`)
+- `custom_mapping.inbound|outbound.target.location`: grouped transport location
+- `custom_mapping.inbound|outbound.target.key`: grouped transport key
+- `custom_mapping.inbound|outbound.transform[]`: grouped transform chain
+- `custom_mapping.inbound|outbound.grouping.type`: grouping mode (v1: `position`)
+- `custom_mapping.inbound|outbound.grouping.separator`: delimiter for grouped values (default recommended: `+`)
+- `custom_mapping.inbound|outbound.grouping.fields[]`: ordered field mapping list
+  - `source`: canonical field (`id` or `encrypted_data`)
+  - `position`: zero-based position in grouped value
+
+`custom_mapping` behavior:
+
+- `custom_mapping.inbound`: channel applies inverse transform chain, splits grouped value by configured `separator`, and assigns values to canonical fields by `position`.
+- `custom_mapping.outbound`: channel collects canonical fields by `position`, joins with configured `separator`, then applies transform chain in listed order.
 
 Supported transform types (v1):
 
@@ -482,18 +506,18 @@ mapping:
 - If no profile matches, reject request as unmatched.
 - On successful match:
   - `action` is resolved and executed first.
-  - Inbound decode path uses `combined_in` if configured, otherwise `encrypted_data_in` + `id` field mappings.
-  - Outbound encode path uses `combined_out` if configured, otherwise `encrypted_data_out` mapping.
+  - Inbound decode path uses `custom_mapping.inbound` when configured, otherwise `encrypted_data_in` + `id` field mappings.
+  - Outbound encode path uses `custom_mapping.outbound` when configured, otherwise `encrypted_data_out` mapping.
 
 ## Validation Constraints
 
 For enabled profile sets in same channel scope:
 
 - no overlapping enabled `mapping.profile_id` hint keys
-- no overlapping enabled mapping shapes (`mapping.id` + `mapping.encrypted_data_in`, or `mapping.combined_in`)
+- no overlapping enabled mapping shapes (`mapping.id` + `mapping.encrypted_data_in`, or `mapping.custom_mapping.inbound`)
 - use `match.required_fields` and unique hint design to minimize ambiguity
 
-## Minimal Practical Example (combined body)
+## Minimal Practical Example (custom_mapping position grouping)
 
 ```yaml
 profile_id: default
@@ -520,18 +544,33 @@ mapping:
     target:
       location: body
       key: encrypted_data
-  combined_in:
-    target:
-      location: body
-      key: ""
-    transform:
-      - type: base64
-    separator: "+"
-  combined_out:
-    target:
-      location: body
-      key: ""
-    transform:
-      - type: base64
-    separator: "+"
+  custom_mapping:
+    inbound:
+      target:
+        location: body
+        key: ""
+      transform:
+        - type: base64
+      grouping:
+        type: position
+        separator: "+"
+        fields:
+          - source: id
+            position: 0
+          - source: encrypted_data
+            position: 1
+    outbound:
+      target:
+        location: body
+        key: ""
+      transform:
+        - type: base64
+      grouping:
+        type: position
+        separator: "+"
+        fields:
+          - source: id
+            position: 0
+          - source: encrypted_data
+            position: 1
 ```
