@@ -286,25 +286,6 @@ Outbound:
 - channel canonical value: `a b&c=d`
 - sent to implant: `a+b%26c%3Dd`
 
-### Ordered chain example
-
-```yaml
-transform:
-  - type: prefix
-    value: "chan:"
-  - type: base64url
-```
-
-Inbound:
-- implant sent: `Y2hhbjpwYXlsb2FkNDI`
-- channel step1 (base64url decode): `chan:payload42`
-- channel step2 (prefix decode): `payload42`
-
-Outbound:
-- channel canonical value: `payload42`
-- encode step1 (prefix): `chan:payload42`
-- encode step2 (base64url): `Y2hhbjpwYXlsb2FkNDI`
-
 Optional:
 
 - `noise[]` static filler fields
