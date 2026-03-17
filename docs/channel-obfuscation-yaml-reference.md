@@ -67,11 +67,6 @@ mapping:
       key: <payload-out-key>
     transform:
       - type: base64
-
-  noise:
-    - location: <channel-defined-location>
-      key: <noise-key>
-      value: "<noise-value>"
 ```
 
 ## Field Reference
@@ -285,10 +280,6 @@ Inbound (channel decode counterpart):
 Outbound:
 - channel canonical value: `a b&c=d`
 - sent to implant: `a+b%26c%3Dd`
-
-Optional:
-
-- `noise[]` static filler fields
 
 ## Action examples
 

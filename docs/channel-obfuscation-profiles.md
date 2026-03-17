@@ -25,7 +25,6 @@ A profile may also define reversible encoding/wrapping, for example:
 - base64/base64url variants
 - field renaming/aliasing
 - optional channel-layer wrapping/encryption
-- padding/noise fields
 
 A profile also defines channel behavior through an `action` namespace object.
 
