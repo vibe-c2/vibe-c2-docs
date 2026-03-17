@@ -19,5 +19,5 @@ go get github.com/vibe-c2/vibe-c2-golang-channel-core@v0.6.0
 ## Current Status
 
 - released version: `v0.6.0`
-- includes object-based transforms and `custom_mapping` grouped mapping support
+- includes object-based transforms
 - integrated into channel modules: `vibe-c2-http-channel`, `vibe-c2-telegram-channel`
