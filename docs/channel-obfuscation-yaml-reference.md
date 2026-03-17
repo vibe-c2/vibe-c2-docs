@@ -71,10 +71,13 @@ Channels may define additional custom actions (e.g., `redirect`). Custom action 
 
 - `profile_id` (optional)
   - used to read/write hint
-- `id` (required)
+- `id` (required unless `composite_in` is used)
   - inbound only (implant -> channel -> c2); outbound responses do not carry `id`
-- `encrypted_data_in` (required)
+- `encrypted_data_in` (required unless `composite_in` is used)
   - inbound encrypted payload mapping (implant -> channel -> c2)
+- `composite_in` (optional; replaces `id` + `encrypted_data_in`)
+  - single transport value carrying both `id` and `encrypted_data` concatenated together
+  - requires `separator` to define how fields are split/joined
 - `encrypted_data_out` (required)
   - outbound encrypted payload mapping (c2 -> channel -> implant); outbound carries only `encrypted_data`
 
@@ -83,6 +86,11 @@ Each mapping entry supports:
 - `target.location`: **channel-defined location namespace** (string)
 - `target.key` (optional): transport key/name; omit when the mapping targets the entire location (e.g., raw body)
 - `transform[]`: ordered transform object list
+
+`composite_in.separator`:
+
+- `type: length_prefix` — first N bytes are `id`, rest is `encrypted_data` (`id_length` required)
+- `type: delimiter` — split on character sequence (`value` required)
 
 Supported transform types (v1):
 
@@ -345,6 +353,33 @@ mapping:
       location: body
 ```
 
+### Composite inbound: `id` + `encrypted_data` in single body (HTTP channel)
+
+```yaml
+profile_id: 103
+profile_label: http-composite-body
+enabled: true
+action:
+  type: sync
+mapping:
+  composite_in:
+    separator:
+      type: length_prefix
+      id_length: 16
+    target:
+      location: body
+    transform:
+      - type: base64
+  encrypted_data_out:
+    target:
+      location: body
+    transform:
+      - type: base64
+```
+
+Inbound: base64-decode body, take first 16 bytes as `id`, remainder as `encrypted_data`.
+Outbound: only `encrypted_data` — base64-encode and write to body.
+
 ## Matching Model
 
 - If `profile_id` hint resolves to one enabled profile, use it.
@@ -352,7 +387,7 @@ mapping:
 - If no profile matches, reject request as unmatched.
 - On successful match:
   - `action` is resolved and executed first.
-  - Inbound decode path uses `id` + `encrypted_data_in` field mappings.
+  - Inbound decode path uses `id` + `encrypted_data_in` field mappings (or `composite_in` when fields are concatenated).
   - Outbound encode path uses `encrypted_data_out` mapping only (outbound responses do not carry `id`).
 
 ## Validation Constraints
