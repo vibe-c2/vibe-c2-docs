@@ -54,7 +54,7 @@ Inbound (implant/session -> channel -> core):
 2. Channel first attempts to extract `profile_id` hint using configured hint locations.
 3. If hint is valid and points to enabled profile, channel uses that profile directly.
 4. If hint is missing/invalid, channel builds candidate list from enabled profiles.
-5. Channel tries candidates in priority/frequency order.
+5. Channel tries candidates ordered by runtime match frequency; `priority` seeds the initial order before frequency data is available.
 6. On first successful decode to canonical fields (`id`, `encrypted_data`), channel uses that profile.
 7. If no candidate succeeds, channel rejects request as unmatched profile.
 8. After profile match, channel resolves and executes `action` from that profile.

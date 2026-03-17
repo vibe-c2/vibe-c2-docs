@@ -58,7 +58,7 @@ Top-level:
 - `profile_id` (required)
 - `channel_type` (required)
 - `enabled` (required)
-- `priority` (required)
+- `priority` (required): seeds brute-force match order before runtime frequency data is available; higher value = tried first
 - `action` (required)
 - `mapping` (required)
 
@@ -344,7 +344,7 @@ mapping:
 ## Matching Model
 
 - If `profile_id` hint resolves to one enabled profile, use it.
-- Otherwise, brute-force enabled profiles using matching strategy.
+- Otherwise, brute-force enabled profiles ordered by runtime match frequency; `priority` seeds the initial order before frequency data is available.
 - If no profile matches, reject request as unmatched.
 - On successful match:
   - `action` is resolved and executed first.
