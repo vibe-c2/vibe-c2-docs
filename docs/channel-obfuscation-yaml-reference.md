@@ -6,7 +6,6 @@
 
 ```yaml
 profile_id: generic-profile-01
-channel_type: <channel-type>
 enabled: true
 
 action:
@@ -55,7 +54,6 @@ mapping:
 Top-level:
 
 - `profile_id` (required)
-- `channel_type` (required)
 - `enabled` (required)
 - `action` (required)
 - `mapping` (required)
@@ -258,7 +256,6 @@ Outbound:
 
 ```yaml
 profile_id: http-sync-header
-channel_type: http
 enabled: true
 action:
   type: sync
@@ -284,7 +281,6 @@ mapping:
 
 ```yaml
 profile_id: telegram-sync-message
-channel_type: telegram
 enabled: true
 action:
   type: sync
@@ -310,7 +306,6 @@ mapping:
 
 ```yaml
 profile_id: http-redirect-edge
-channel_type: http
 enabled: true
 action:
   type: redirect
@@ -358,7 +353,6 @@ For enabled profile sets in same channel scope:
 
 ```yaml
 profile_id: default
-channel_type: http
 enabled: true
 action:
   type: sync
