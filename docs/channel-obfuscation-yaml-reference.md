@@ -121,7 +121,7 @@ Supported transform types (v1):
 - `prefix` (`value` required)
 - `suffix` (`value` required)
 - `replace` (`from`, `to` required)
-- `url_encode` / `url_decode`
+- `url_encode`
 
 ## Action execution semantics
 
@@ -266,7 +266,7 @@ Outbound:
 - channel canonical value: `a/b/c`
 - sent to implant: `a_b_c`
 
-### 6) `url_encode` / `url_decode`
+### 6) `url_encode`
 
 Use case: transport-safe payload in query/form-like fields.
 
