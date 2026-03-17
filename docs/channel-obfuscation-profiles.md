@@ -111,7 +111,7 @@ Validation on create/update should include overlap checks against other enabled 
 ### Conflict control
 
 - Multiple enabled profiles may accidentally match the same inbound shape.
-- Channel/C2 must reject create/update operations that introduce ambiguous overlap (for same channel + transport).
+- Channel/C2 must reject create/update operations that introduce ambiguous overlap (for same channel).
 - `profile_id` hint must uniquely map to one enabled profile in channel scope.
 - Default profile behavior is not supported; unmatched payloads must be rejected.
 

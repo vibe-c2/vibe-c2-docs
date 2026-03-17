@@ -21,7 +21,6 @@ enabled: true
 priority: 100
 
 match:
-  transport: <channel-type>
   required_fields:
     - location: <channel-defined-location>
       key: <field-key>
@@ -82,7 +81,6 @@ Top-level:
 
 `match`:
 
-- `transport` (optional)
 - `required_fields[]` (optional pre-filter checks)
   - `location`: **channel-defined location namespace** (string)
   - `key`: field key/name in that location
