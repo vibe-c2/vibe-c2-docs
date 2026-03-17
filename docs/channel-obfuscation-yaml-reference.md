@@ -19,7 +19,6 @@ profile_id: generic-profile-01
 channel_type: <channel-type>
 enabled: true
 priority: 100
-version: 1
 
 match:
   transport: <channel-type>
@@ -77,7 +76,6 @@ Top-level:
 - `channel_type` (required)
 - `enabled` (required)
 - `priority` (required)
-- `version` (optional)
 - `match` (optional but recommended)
 - `action` (required)
 - `mapping` (required)
