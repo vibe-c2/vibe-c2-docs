@@ -35,7 +35,7 @@ Open `http://127.0.0.1:8000`.
 ```bash
 git add .
 git commit -m "Initialize documentation boilerplate"
-git remote add origin git@github.com:Wooderan/vibe-c2-docs.git
+git remote add origin git@github.com:vibe-c2/vibe-c2-docs.git
 git push -u origin main
 ```
 
@@ -45,4 +45,4 @@ git push -u origin main
 
 After the first successful workflow run, the site URL will be:
 
-`https://wooderan.github.io/vibe-c2-docs/`
+`https://vibe-c2.github.io/vibe-c2-docs/`
