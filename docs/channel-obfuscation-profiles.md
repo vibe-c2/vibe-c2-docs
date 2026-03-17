@@ -53,7 +53,7 @@ Inbound (implant/session -> channel -> core):
 1. Channel receives obfuscated transport payload.
 2. Channel first attempts to extract `profile_id` hint using configured hint locations.
 3. If hint is valid and points to enabled profile, channel uses that profile directly.
-4. If hint is missing/invalid, channel builds candidate list from enabled profiles using `match` pre-filters.
+4. If hint is missing/invalid, channel builds candidate list from enabled profiles.
 5. Channel tries candidates in priority/frequency order.
 6. On first successful decode to canonical fields (`id`, `encrypted_data`), channel uses that profile.
 7. If no candidate succeeds, channel rejects request as unmatched profile.
@@ -107,7 +107,6 @@ Validation on create/update should include overlap checks against other enabled 
 ### Performance control
 
 - Prefer direct selection via transport `profile_id` hint.
-- Use `match` pre-filters to narrow candidate set before decode attempts when hint is unavailable.
 - Order attempts by observed frequency/success rate.
 - Cache source-to-profile affinity (for example `source_ip -> profile_id`, `telegram_chat_id -> profile_id`) with TTL.
 - On cache hit, try cached profile first; on miss/failure, continue ordered candidates.

@@ -20,11 +20,6 @@ channel_type: <channel-type>
 enabled: true
 priority: 100
 
-match:
-  required_fields:
-    - location: <channel-defined-location>
-      key: <field-key>
-
 action:
   type: <channel-defined-action-type>
   params: <channel-defined-object>
@@ -75,15 +70,8 @@ Top-level:
 - `channel_type` (required)
 - `enabled` (required)
 - `priority` (required)
-- `match` (optional but recommended)
 - `action` (required)
 - `mapping` (required)
-
-`match`:
-
-- `required_fields[]` (optional pre-filter checks)
-  - `location`: **channel-defined location namespace** (string)
-  - `key`: field key/name in that location
 
 `action`:
 
@@ -386,7 +374,7 @@ For enabled profile sets in same channel scope:
 
 - no overlapping enabled `mapping.profile_id` hint keys
 - no overlapping enabled mapping shapes (`mapping.id` + `mapping.encrypted_data_in`)
-- use `match.required_fields` and unique hint design to minimize ambiguity
+- use unique hint design to minimize ambiguity
 
 ## Minimal Practical Example
 
