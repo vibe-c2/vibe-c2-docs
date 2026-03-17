@@ -74,8 +74,8 @@ Inbound (implant/session -> channel -> core):
 
 Outbound (core -> channel -> implant/session):
 
-1. Channel receives canonical response (`outbound.agent_message`).
-2. Channel uses the inbound-resolved profile and selected `action` to produce outbound transport behavior.
+1. Channel receives canonical response (`outbound.agent_message`) containing only `encrypted_data`.
+2. Channel uses the inbound-resolved profile and `encrypted_data_out` mapping to produce outbound transport payload. Outbound does not carry `id`.
 3. Channel returns transport-shaped response to implant/session.
 4. Channel updates profile usage counters/cache for future ordering.
 
@@ -83,40 +83,11 @@ Outbound (core -> channel -> implant/session):
 
 Concrete examples of channel-defined action types after profile match:
 
-### HTTP process/sync action
+- `http.process_sync` — normal HTTP channel path: decode profile mapping, call C2 sync, then encode response.
+- `http.redirect` — returns redirect behavior to alternate channel infrastructure instead of local sync processing.
+- `telegram.process` — uses Telegram channel processing flow after profile decode.
 
-```yaml
-action:
-  type: http.process_sync
-  params:
-    sync_route: /api/v1/sync
-```
-
-- Normal HTTP channel path: decode profile mapping, call C2 sync, then encode response.
-
-### HTTP redirect action (to another channel/infra)
-
-```yaml
-action:
-  type: http.redirect
-  params:
-    status_code: 302
-    location: https://edge-redirect.example.net/tunnel
-    target_channel: edge-http
-```
-
-- Returns redirect behavior to alternate channel infrastructure instead of local sync processing.
-
-### Telegram process action
-
-```yaml
-action:
-  type: telegram.process
-  params:
-    update_kind: message
-```
-
-- Uses Telegram channel processing flow after profile decode.
+See [Obfuscation Profile YAML Reference](channel-obfuscation-yaml-reference.md) for full profile examples with action configuration.
 
 ## Management model
 

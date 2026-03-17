@@ -106,10 +106,11 @@ Top-level:
 - `profile_id` (optional)
   - used to read/write hint
 - `id` (required)
+  - inbound only (implant -> channel -> c2); outbound responses do not carry `id`
 - `encrypted_data_in` (required)
   - inbound encrypted payload mapping (implant -> channel -> c2)
 - `encrypted_data_out` (required)
-  - outbound encrypted payload mapping (c2 -> channel -> implant)
+  - outbound encrypted payload mapping (c2 -> channel -> implant); outbound carries only `encrypted_data`
 
 Each mapping entry supports:
 
@@ -399,60 +400,6 @@ mapping:
       key: payload
 ```
 
-## Channel-specific location namespaces
-
-Location namespace is channel-defined. Same schema, different location values.
-
-### HTTP channel example
-
-```yaml
-action:
-  type: http.process_sync
-  params:
-    sync_route: /api/v1/sync
-mapping:
-  id:
-    source: id
-    target:
-      location: header
-      key: X-Request-ID
-  encrypted_data_in:
-    source: encrypted_data
-    target:
-      location: body
-      key: data
-  encrypted_data_out:
-    source: encrypted_data
-    target:
-      location: body
-      key: data
-```
-
-### Telegram channel example
-
-```yaml
-action:
-  type: telegram.process
-  params:
-    update_kind: message
-mapping:
-  id:
-    source: id
-    target:
-      location: message
-      key: id
-  encrypted_data_in:
-    source: encrypted_data
-    target:
-      location: message
-      key: payload
-  encrypted_data_out:
-    source: encrypted_data
-    target:
-      location: message
-      key: payload
-```
-
 ## Matching Model
 
 - If `profile_id` hint resolves to one enabled profile, use it.
@@ -460,8 +407,8 @@ mapping:
 - If no profile matches, reject request as unmatched.
 - On successful match:
   - `action` is resolved and executed first.
-  - Inbound decode path uses `encrypted_data_in` + `id` field mappings.
-  - Outbound encode path uses `encrypted_data_out` mapping.
+  - Inbound decode path uses `id` + `encrypted_data_in` field mappings.
+  - Outbound encode path uses `encrypted_data_out` mapping only (outbound responses do not carry `id`).
 
 ## Validation Constraints
 
