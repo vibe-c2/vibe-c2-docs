@@ -69,11 +69,13 @@ Outbound (core -> channel -> implant/session):
 
 ## Action examples
 
-Concrete examples of channel-defined action types after profile match:
+Standard actions (every channel must implement):
 
-- `http.process_sync` — normal HTTP channel path: decode profile mapping, call C2 sync, then encode response.
-- `http.redirect` — returns redirect behavior to alternate channel infrastructure instead of local sync processing.
-- `telegram.process` — uses Telegram channel processing flow after profile decode.
+- `sync` — decode profile mapping, call C2 sync endpoint, encode response.
+
+Custom actions (channel-defined, examples):
+
+- `redirect` (HTTP) — returns redirect behavior to alternate channel infrastructure instead of local sync processing.
 
 See [Obfuscation Profile YAML Reference](channel-obfuscation-yaml-reference.md) for full profile examples with action configuration.
 

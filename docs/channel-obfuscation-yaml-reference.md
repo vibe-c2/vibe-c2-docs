@@ -21,8 +21,7 @@ enabled: true
 priority: 100
 
 action:
-  type: <channel-defined-action-type>
-  params: <channel-defined-object>
+  type: sync
 
 mapping:
   profile_id:
@@ -75,10 +74,16 @@ Top-level:
 
 `action`:
 
-- `type` (required): **channel-defined behavior selector**
-- `params` (required): **channel-defined object**
+- `type` (required): action name
+- `params` (optional): action-specific parameters
 - evaluated only after profile match + canonical decode
 - does not change `mapping.transform[]` order semantics
+
+Standard actions (every channel must implement):
+
+- `sync` — decode mapping, call C2 sync endpoint, encode response
+
+Channels may define additional custom actions (e.g., `redirect`). Custom action names, params schema, and behavior are fully channel-defined.
 
 `mapping`:
 
@@ -111,11 +116,8 @@ Supported transform types (v1):
 
 - Profile matching/decoding happens first.
 - After a profile matches, the channel executes `action.type` with `action.params`.
-- Typical actions:
-  - `http.process_sync`
-  - `http.redirect`
-  - `telegram.process`
-- Action behavior selection is channel-specific and independent from transform inversion rules.
+- Standard actions (`sync`) have spec-defined behavior; custom actions are channel-defined.
+- Action behavior is independent from transform inversion rules.
 
 ## Transformation chain order (authoritative)
 
@@ -269,17 +271,15 @@ Outbound:
 
 ## Action examples
 
-### HTTP process/sync action
+### Standard action: `sync` (HTTP channel)
 
 ```yaml
-profile_id: http-process-sync
+profile_id: http-sync-header
 channel_type: http
 enabled: true
 priority: 100
 action:
-  type: http.process_sync
-  params:
-    sync_route: /api/v1/sync
+  type: sync
 mapping:
   id:
     source: id
@@ -298,7 +298,34 @@ mapping:
       key: data
 ```
 
-### HTTP redirect action (to another channel/infra)
+### Standard action: `sync` (Telegram channel)
+
+```yaml
+profile_id: telegram-sync-message
+channel_type: telegram
+enabled: true
+priority: 100
+action:
+  type: sync
+mapping:
+  id:
+    source: id
+    target:
+      location: message
+      key: id
+  encrypted_data_in:
+    source: encrypted_data
+    target:
+      location: message
+      key: payload
+  encrypted_data_out:
+    source: encrypted_data
+    target:
+      location: message
+      key: payload
+```
+
+### Custom action: `redirect` (HTTP channel)
 
 ```yaml
 profile_id: http-redirect-edge
@@ -306,7 +333,7 @@ channel_type: http
 enabled: true
 priority: 90
 action:
-  type: http.redirect
+  type: redirect
   params:
     status_code: 302
     location: https://edge-redirect.example.net/tunnel
@@ -327,35 +354,6 @@ mapping:
     target:
       location: query
       key: blob
-```
-
-### Telegram process action
-
-```yaml
-profile_id: telegram-process-message
-channel_type: telegram
-enabled: true
-priority: 100
-action:
-  type: telegram.process
-  params:
-    update_kind: message
-mapping:
-  id:
-    source: id
-    target:
-      location: message
-      key: id
-  encrypted_data_in:
-    source: encrypted_data
-    target:
-      location: message
-      key: payload
-  encrypted_data_out:
-    source: encrypted_data
-    target:
-      location: message
-      key: payload
 ```
 
 ## Matching Model
@@ -384,9 +382,7 @@ channel_type: http
 enabled: true
 priority: 100
 action:
-  type: http.process_sync
-  params:
-    sync_route: /api/channel/sync
+  type: sync
 mapping:
   id:
     source: id
