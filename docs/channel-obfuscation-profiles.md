@@ -1,6 +1,6 @@
 # Channel Obfuscation Profiles
 
-This page defines the obfuscation layer used by channel modules when transporting `id` and `encrypted_data` between implant/session and core C2.
+This page defines the obfuscation layer used by channel modules when transporting `id` (inbound) and `encrypted_data` (both directions) for implant/session communication with core C2.
 
 ## Purpose
 
