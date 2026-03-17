@@ -350,6 +350,7 @@ mapping:
 
 For enabled profile sets in same channel scope:
 
+- no duplicate `profile_id` values
 - no overlapping enabled `mapping.profile_id` hint keys
 - no overlapping enabled mapping shapes (`mapping.id` + `mapping.encrypted_data_in`)
 - use unique hint design to minimize ambiguity
