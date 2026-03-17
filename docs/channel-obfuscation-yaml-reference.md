@@ -249,6 +249,8 @@ Outbound:
 
 Use case: implant applies character substitution; channel reverses it in decode path.
 
+**Constraint:** `replace` is only safe when the `to` character is guaranteed not to appear in the input value. If both `from` and `to` characters can appear in the data, the inbound reversal is lossy. When applying `replace` to `encrypted_data`, always pair it with a prior encoding transform (e.g., `base64url`) that eliminates the ambiguous character first.
+
 ```yaml
 transform:
   - type: replace
