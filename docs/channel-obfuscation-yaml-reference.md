@@ -14,7 +14,6 @@ action:
 
 mapping:
   profile_id:
-    source: profile_id
     target:
       location: <channel-defined-location>
       key: <profile-hint-key>
@@ -24,7 +23,6 @@ mapping:
       - type: base64url
 
   id:
-    source: id
     target:
       location: <channel-defined-location>
       key: <id-key>
@@ -34,7 +32,6 @@ mapping:
       - type: base64url
 
   encrypted_data_in:
-    source: encrypted_data
     target:
       location: <channel-defined-location>
       key: <payload-in-key>
@@ -42,7 +39,6 @@ mapping:
       - type: base64
 
   encrypted_data_out:
-    source: encrypted_data
     target:
       location: <channel-defined-location>
       key: <payload-out-key>
@@ -84,7 +80,6 @@ Channels may define additional custom actions (e.g., `redirect`). Custom action 
 
 Each mapping entry supports:
 
-- `source`: canonical field name
 - `target.location`: **channel-defined location namespace** (string)
 - `target.key`: transport key/name
 - `transform[]`: ordered transform object list
@@ -264,17 +259,14 @@ action:
   type: sync
 mapping:
   id:
-    source: id
     target:
       location: header
       key: X-Request-ID
   encrypted_data_in:
-    source: encrypted_data
     target:
       location: body
       key: data
   encrypted_data_out:
-    source: encrypted_data
     target:
       location: body
       key: data
@@ -290,17 +282,14 @@ action:
   type: sync
 mapping:
   id:
-    source: id
     target:
       location: message
       key: id
   encrypted_data_in:
-    source: encrypted_data
     target:
       location: message
       key: payload
   encrypted_data_out:
-    source: encrypted_data
     target:
       location: message
       key: payload
@@ -320,17 +309,14 @@ action:
     target_channel: edge-http
 mapping:
   id:
-    source: id
     target:
       location: query
       key: rid
   encrypted_data_in:
-    source: encrypted_data
     target:
       location: query
       key: blob
   encrypted_data_out:
-    source: encrypted_data
     target:
       location: query
       key: blob
@@ -364,17 +350,14 @@ action:
   type: sync
 mapping:
   id:
-    source: id
     target:
       location: body
       key: id
   encrypted_data_in:
-    source: encrypted_data
     target:
       location: body
       key: encrypted_data
   encrypted_data_out:
-    source: encrypted_data
     target:
       location: body
       key: encrypted_data
