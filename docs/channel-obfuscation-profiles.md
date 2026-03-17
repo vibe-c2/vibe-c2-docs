@@ -26,20 +26,9 @@ A profile may also define reversible encoding/wrapping, for example:
 - field renaming/aliasing
 - optional channel-layer wrapping/encryption
 
-A profile also defines channel behavior through an `action` namespace object.
+A profile also defines channel behavior through an `action` object — `action.type` selects behavior after profile match and canonical decode, `action.params` carries channel-defined parameters. See the [YAML Reference](channel-obfuscation-yaml-reference.md) for exact structure.
 
 > **Status:** documentation-level specification (design target). Runtime implementation may lag behind spec.
-
-
-```yaml
-action:
-  type: <channel-defined-action-type>
-  params: <channel-defined-object>
-```
-
-- `action.type` selects behavior after profile match and canonical decode.
-- `action.params` carries channel-defined parameters for that behavior.
-- `action` does not change transform ordering semantics in `mapping.transform`.
 
 ## Profile storage and ownership
 
