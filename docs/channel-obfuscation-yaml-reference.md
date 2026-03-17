@@ -8,7 +8,6 @@
 profile_id: generic-profile-01
 channel_type: <channel-type>
 enabled: true
-priority: 100
 
 action:
   type: sync
@@ -58,7 +57,6 @@ Top-level:
 - `profile_id` (required)
 - `channel_type` (required)
 - `enabled` (required)
-- `priority` (required): seeds brute-force match order before runtime frequency data is available; higher value = tried first
 - `action` (required)
 - `mapping` (required)
 
@@ -262,7 +260,6 @@ Outbound:
 profile_id: http-sync-header
 channel_type: http
 enabled: true
-priority: 100
 action:
   type: sync
 mapping:
@@ -289,7 +286,6 @@ mapping:
 profile_id: telegram-sync-message
 channel_type: telegram
 enabled: true
-priority: 100
 action:
   type: sync
 mapping:
@@ -316,7 +312,6 @@ mapping:
 profile_id: http-redirect-edge
 channel_type: http
 enabled: true
-priority: 90
 action:
   type: redirect
   params:
@@ -344,7 +339,7 @@ mapping:
 ## Matching Model
 
 - If `profile_id` hint resolves to one enabled profile, use it.
-- Otherwise, brute-force enabled profiles ordered by runtime match frequency; `priority` seeds the initial order before frequency data is available.
+- Otherwise, brute-force enabled profiles ordered by runtime match frequency.
 - If no profile matches, reject request as unmatched.
 - On successful match:
   - `action` is resolved and executed first.
@@ -365,7 +360,6 @@ For enabled profile sets in same channel scope:
 profile_id: default
 channel_type: http
 enabled: true
-priority: 100
 action:
   type: sync
 mapping:
