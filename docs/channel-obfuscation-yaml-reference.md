@@ -5,7 +5,8 @@
 ## Canonical YAML Structure
 
 ```yaml
-profile_id: generic-profile-01
+profile_id: 1
+profile_label: generic-profile-01
 enabled: true
 
 action:
@@ -53,7 +54,8 @@ mapping:
 
 Top-level:
 
-- `profile_id` (required)
+- `profile_id` (required): int32 numeric identifier
+- `profile_label` (optional): human-readable name
 - `enabled` (required)
 - `action` (required)
 - `mapping` (required)
@@ -255,7 +257,8 @@ Outbound:
 ### Standard action: `sync` (HTTP channel)
 
 ```yaml
-profile_id: http-sync-header
+profile_id: 100
+profile_label: http-sync-header
 enabled: true
 action:
   type: sync
@@ -280,7 +283,8 @@ mapping:
 ### Standard action: `sync` (Telegram channel)
 
 ```yaml
-profile_id: telegram-sync-message
+profile_id: 200
+profile_label: telegram-sync-message
 enabled: true
 action:
   type: sync
@@ -305,7 +309,8 @@ mapping:
 ### Custom action: `redirect` (HTTP channel)
 
 ```yaml
-profile_id: http-redirect-edge
+profile_id: 101
+profile_label: http-redirect-edge
 enabled: true
 action:
   type: redirect
@@ -352,7 +357,7 @@ For enabled profile sets in same channel scope:
 ## Minimal Practical Example
 
 ```yaml
-profile_id: default
+profile_id: 1
 enabled: true
 action:
   type: sync
