@@ -1,16 +1,6 @@
 # Obfuscation Profile YAML Reference
 
-This page is the canonical YAML reference for channel obfuscation profiles.
-
-It is intentionally self-contained and defines the complete YAML structure.
-
 > **Status:** this reference describes the target spec. Individual channel implementations may not support every field yet (for example `action`) until implementation catches up.
-
-## Rules
-
-- **One YAML file = one profile**.
-- Multi-profile arrays/wrappers in one file are not allowed.
-- There is **no default profile** behavior.
 
 ## Canonical YAML Structure
 
@@ -76,8 +66,6 @@ Top-level:
 
 - `type` (required): action name
 - `params` (optional): action-specific parameters
-- evaluated only after profile match + canonical decode
-- does not change `mapping.transform[]` order semantics
 
 Standard actions (every channel must implement):
 
@@ -117,7 +105,6 @@ Supported transform types (v1):
 - Profile matching/decoding happens first.
 - After a profile matches, the channel executes `action.type` with `action.params`.
 - Standard actions (`sync`) have spec-defined behavior; custom actions are channel-defined.
-- Action behavior is independent from transform inversion rules.
 
 ## Transformation chain order (authoritative)
 
@@ -139,8 +126,6 @@ Think of it as function composition:
 
 - outbound value: `T3(T2(T1(canonical)))`
 - inbound value: `T1^-1(T2^-1(T3^-1(received)))`
-
-This is mandatory for deterministic roundtrip.
 
 ### Mini example
 
