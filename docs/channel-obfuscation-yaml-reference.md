@@ -81,7 +81,7 @@ Channels may define additional custom actions (e.g., `redirect`). Custom action 
 Each mapping entry supports:
 
 - `target.location`: **channel-defined location namespace** (string)
-- `target.key`: transport key/name
+- `target.key` (optional): transport key/name; omit when the mapping targets the entire location (e.g., raw body)
 - `transform[]`: ordered transform object list
 
 Supported transform types (v1):
