@@ -56,9 +56,8 @@ nav:
       - Channel Obfuscation Profiles: channel-obfuscation-profiles.md
       - Obfuscation Profile YAML Reference: channel-obfuscation-yaml-reference.md
       - Obfuscation Profile Examples: channel-obfuscation-examples.md
-      - Channel Modules:
-          - vibe-c2-http-channel: golang-package-http-channel.md
-          - vibe-c2-telegram-channel: golang-package-telegram-channel.md
+      - "Channel Module: HTTP": golang-package-http-channel.md
+      - "Channel Module: Telegram": golang-package-telegram-channel.md
       - Channel Authoring (15 min): channel-authoring-15min.md
   - Go Packages Ecosystem:
       - Overview: golang-packages.md
