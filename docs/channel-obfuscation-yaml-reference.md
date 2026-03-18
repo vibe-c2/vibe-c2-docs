@@ -257,6 +257,8 @@ Outbound:
 
 ## Action examples
 
+For an extensive collection of complete profile examples with runtime walkthroughs, see [Obfuscation Profile Examples](channel-obfuscation-examples.md).
+
 ### Standard action: `sync` (HTTP channel)
 
 ```yaml
@@ -302,83 +304,6 @@ mapping:
       location: message
       key: payload
 ```
-
-### Custom action: `redirect` (HTTP channel)
-
-```yaml
-profile_id: 101
-profile_label: http-redirect-edge
-enabled: true
-action:
-  type: redirect
-  params:
-    status_code: 302
-    location: https://edge-redirect.example.net/tunnel
-    target_channel: edge-http
-mapping:
-  id:
-    target:
-      location: query
-      key: rid
-  encrypted_data_in:
-    target:
-      location: query
-      key: blob
-  encrypted_data_out:
-    target:
-      location: query
-      key: blob
-```
-
-### Custom action: `proxy_pass` (HTTP channel)
-
-```yaml
-profile_id: 102
-profile_label: http-proxy-upstream
-enabled: true
-action:
-  type: proxy_pass
-  params:
-    upstream: https://upstream.example.net/c2
-mapping:
-  id:
-    target:
-      location: header
-      key: X-Agent-ID
-  encrypted_data_in:
-    target:
-      location: body
-  encrypted_data_out:
-    target:
-      location: body
-```
-
-### Composite inbound: `id` + `encrypted_data` in single body (HTTP channel)
-
-```yaml
-profile_id: 103
-profile_label: http-composite-body
-enabled: true
-action:
-  type: sync
-mapping:
-  composite_in:
-    separator:
-      type: length_prefix
-      id_length: 16
-    target:
-      location: body
-    transform:
-      - type: base64
-  encrypted_data_out:
-    target:
-      location: body
-    transform:
-      - type: base64
-```
-
-Inbound: base64-decode body, take first 16 bytes as `id`, remainder as `encrypted_data`.
-Outbound: only `encrypted_data` — base64-encode and write to body.
 
 ## Matching Model
 

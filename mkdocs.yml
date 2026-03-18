@@ -39,6 +39,7 @@ nav:
       - Message Contracts: message-contracts.md
       - Channel Obfuscation Profiles: channel-obfuscation-profiles.md
       - Obfuscation Profile YAML Reference: channel-obfuscation-yaml-reference.md
+      - Obfuscation Profile Examples: channel-obfuscation-examples.md
       - Channel Modules:
           - vibe-c2-http-channel: golang-package-http-channel.md
           - vibe-c2-telegram-channel: golang-package-telegram-channel.md

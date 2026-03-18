@@ -42,9 +42,11 @@ A profile also defines channel behavior through an `action` object — `action.t
 YAML schema details are intentionally kept in a dedicated page:
 
 - [Obfuscation Profile YAML Reference](channel-obfuscation-yaml-reference.md)
+- [Obfuscation Profile Examples](channel-obfuscation-examples.md)
 
 Use this page for architecture/behavioral concepts and matching model.
-Use the YAML reference page for exact profile file structure, field-level syntax, and examples.
+Use the YAML reference page for exact profile file structure, field-level syntax, and transform catalog.
+Use the examples page for a self-contained walkthrough and ready-to-use profile catalog.
 
 ## Runtime flow
 
