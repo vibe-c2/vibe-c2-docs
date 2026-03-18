@@ -3,6 +3,7 @@ site_description: Product and technical documentation for the Vibe C2 project
 site_url: https://vibe-c2.github.io/vibe-c2-docs/
 repo_url: https://github.com/vibe-c2/vibe-c2-docs
 repo_name: vibe-c2/vibe-c2-docs
+edit_uri: edit/main/docs/
 
 theme:
   name: mkdocs
