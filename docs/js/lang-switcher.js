@@ -3,7 +3,7 @@
 
   var LANGUAGES = [
     { locale: 'en', name: 'EN' },
-    { locale: 'uk', name: 'UK' }
+    { locale: 'uk', name: 'UA' }
   ];
 
   // Capture script src at parse time (before DOMContentLoaded)
