@@ -2,44 +2,39 @@
   'use strict';
 
   var LANGUAGES = [
-    { locale: 'en', name: 'EN', path: '/' },
-    { locale: 'uk', name: 'UK', path: '/uk/' }
+    { locale: 'en', name: 'EN' },
+    { locale: 'uk', name: 'UK' }
   ];
 
+  // Capture script src at parse time (before DOMContentLoaded)
+  var scriptSrc = (document.currentScript || {}).src || '';
+
   function getBasePath() {
-    // Detect site base path from canonical URL or script location
-    var base = '';
-    var canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical) {
+    // Derive base from this script's resolved URL.
+    // MkDocs references it as <base>/js/lang-switcher.js with relative paths,
+    // so the browser resolves it to the correct absolute URL regardless of page depth.
+    if (scriptSrc) {
       try {
-        var url = new URL(canonical.href);
-        // Base is everything before the locale segment
-        var parts = url.pathname.split('/').filter(Boolean);
-        // Check if first segment is a locale
-        var locales = LANGUAGES.map(function (l) { return l.locale; });
-        if (parts.length > 0 && locales.indexOf(parts[0]) !== -1) {
-          base = '';
-        } else {
-          // For GitHub Pages with repo name prefix like /vibe-c2-docs/
-          // Find where the content path starts
-          for (var i = 0; i < parts.length; i++) {
-            if (locales.indexOf(parts[i]) !== -1) break;
-            base += '/' + parts[i];
-          }
+        var url = new URL(scriptSrc);
+        var idx = url.pathname.indexOf('/js/lang-switcher.js');
+        if (idx !== -1) {
+          return url.pathname.substring(0, idx);
         }
       } catch (e) { /* ignore */ }
     }
-    return base;
+    return '';
   }
+
+  var BASE = getBasePath();
+  var LOCALES = LANGUAGES.map(function (l) { return l.locale; });
 
   function getCurrentLocale() {
     var path = window.location.pathname;
-    for (var i = 0; i < LANGUAGES.length; i++) {
-      var lang = LANGUAGES[i];
-      if (lang.locale !== 'en') {
-        // Match /base/uk/ or /uk/ pattern
-        var pattern = '/' + lang.locale + '/';
-        if (path.indexOf(pattern) !== -1) return lang.locale;
+    var afterBase = BASE ? path.substring(BASE.length) : path;
+    for (var i = 0; i < LOCALES.length; i++) {
+      if (LOCALES[i] !== 'en') {
+        var prefix = '/' + LOCALES[i] + '/';
+        if (afterBase.indexOf(prefix) === 0) return LOCALES[i];
       }
     }
     return 'en';
@@ -47,32 +42,22 @@
 
   function getPagePath() {
     var path = window.location.pathname;
-    var base = getBasePath();
-
     // Strip base prefix
-    if (base && path.indexOf(base) === 0) {
-      path = path.substring(base.length);
-    }
-
+    if (BASE) path = path.substring(BASE.length);
     // Strip locale prefix
     var current = getCurrentLocale();
     if (current !== 'en') {
-      var localePrefix = '/' + current + '/';
-      if (path.indexOf(localePrefix) === 0) {
-        path = path.substring(localePrefix.length - 1);
-      }
+      path = path.substring(('/' + current).length);
     }
-
     return path || '/';
   }
 
   function buildUrl(locale) {
-    var base = getBasePath();
     var page = getPagePath();
     if (locale === 'en') {
-      return base + page;
+      return BASE + page;
     }
-    return base + '/' + locale + (page === '/' ? '/' : page);
+    return BASE + '/' + locale + (page === '/' ? '/' : page);
   }
 
   function createSwitcher() {
