@@ -5,7 +5,7 @@
 ## Встановлення
 
 ```bash
-go get github.com/vibe-c2/vibe-c2-golang-protocol@v0.1.0
+go get github.com/vibe-c2/vibe-c2-golang-protocol@latest
 ```
 
 ## Призначення
@@ -16,5 +16,4 @@ go get github.com/vibe-c2/vibe-c2-golang-protocol@v0.1.0
 
 ## Поточний стан
 
-- випущена версія: `v0.1.0`
 - доступний через екосистему Go-модулів (`proxy.golang.org`)

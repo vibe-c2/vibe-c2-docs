@@ -5,7 +5,7 @@ Repository: `https://github.com/vibe-c2/vibe-c2-golang-protocol`
 ## Install
 
 ```bash
-go get github.com/vibe-c2/vibe-c2-golang-protocol@v0.1.0
+go get github.com/vibe-c2/vibe-c2-golang-protocol@latest
 ```
 
 ## Purpose
@@ -16,5 +16,4 @@ go get github.com/vibe-c2/vibe-c2-golang-protocol@v0.1.0
 
 ## Current Status
 
-- released version: `v0.1.0`
 - available via Go module ecosystem (`proxy.golang.org`)

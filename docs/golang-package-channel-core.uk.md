@@ -5,7 +5,7 @@
 ## Встановлення
 
 ```bash
-go get github.com/vibe-c2/vibe-c2-golang-channel-core@v0.6.0
+go get github.com/vibe-c2/vibe-c2-golang-channel-core@latest
 ```
 
 ## Призначення
@@ -18,6 +18,5 @@ go get github.com/vibe-c2/vibe-c2-golang-channel-core@v0.6.0
 
 ## Поточний стан
 
-- випущена версія: `v0.6.0`
 - включає об'єктно-орієнтовані трансформації
 - інтегровано в канальні модулі: `vibe-c2-http-channel`, `vibe-c2-telegram-channel`
