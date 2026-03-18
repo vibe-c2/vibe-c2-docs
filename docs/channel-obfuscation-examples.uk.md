@@ -326,16 +326,13 @@ mapping:
     target:
       location: query
       key: blob
-  encrypted_data_out:
-    target:
-      location: query
-      key: blob
 ```
 
 **Що відбувається під час виконання:**
 
 - **Вхідний** — канал декодує `id` та `encrypted_data` з query-параметрів як зазвичай, але замість виклику C2 sync повертає HTTP 302 redirect на edge URL.
 - Блок `params` повністю визначається каналом — `redirect` не є стандартною дією.
+- `encrypted_data_out` не вказано, оскільки дія redirect не повертає дані імпланту.
 
 ---
 
@@ -484,7 +481,7 @@ mapping:
 
 #### Все у query-рядку (GET-only beacon)
 
-Все у query-параметрах — працює з GET-запитами, корисно для легких beacon'ів.
+Вхідні дані через query-параметри — працює з GET-запитами, корисно для легких beacon'ів. Відповідь повертається у body.
 
 ```yaml
 profile_id: 103
@@ -512,11 +509,10 @@ mapping:
       - type: url_encode     # подвійний захист: base64url потім url_encode
   encrypted_data_out:
     target:
-      location: query
+      location: body
       key: q
     transform:
       - type: base64url
-      - type: url_encode
 ```
 
 #### Змішане розміщення — header + query + body

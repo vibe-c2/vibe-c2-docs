@@ -326,16 +326,13 @@ mapping:
     target:
       location: query
       key: blob
-  encrypted_data_out:
-    target:
-      location: query
-      key: blob
 ```
 
 **What happens at runtime:**
 
 - **Inbound** — channel decodes `id` and `encrypted_data` from query params as usual, but instead of calling C2 sync, it returns an HTTP 302 redirect to the edge URL.
 - The `params` block is entirely channel-defined — `redirect` is not a standard action.
+- `encrypted_data_out` is omitted because redirect action does not return data to the implant.
 
 ---
 
@@ -484,7 +481,7 @@ mapping:
 
 #### All-in-query-string (GET-only beacon)
 
-Everything in query params — works with GET requests, useful for lightweight beacons.
+Inbound via query params — works with GET requests, useful for lightweight beacons. Response returned in body.
 
 ```yaml
 profile_id: 103
@@ -512,11 +509,10 @@ mapping:
       - type: url_encode     # double-safe: base64url then url_encode
   encrypted_data_out:
     target:
-      location: query
+      location: body
       key: q
     transform:
       - type: base64url
-      - type: url_encode
 ```
 
 #### Mixed placement — header + query + body

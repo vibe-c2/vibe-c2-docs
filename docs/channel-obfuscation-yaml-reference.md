@@ -78,8 +78,9 @@ Channels may define additional custom actions (e.g., `redirect`). Custom action 
 - `composite_in` (optional; replaces `id` + `encrypted_data_in`)
   - single transport value carrying both `id` and `encrypted_data` concatenated together
   - requires `separator` to define how fields are split/joined
-- `encrypted_data_out` (required)
+- `encrypted_data_out` (required for actions that return data)
   - outbound encrypted payload mapping (c2 -> channel -> implant); outbound carries only `encrypted_data`
+  - may be omitted when the action does not return data to the implant (e.g., `redirect`)
 
 Each mapping entry supports:
 
@@ -314,6 +315,7 @@ mapping:
   - `action` is resolved and executed first.
   - Inbound decode path uses `id` + `encrypted_data_in` field mappings (or `composite_in` when fields are concatenated).
   - Outbound encode path uses `encrypted_data_out` mapping only (outbound responses do not carry `id`).
+  - Channel should validate that `encrypted_data_out` mapping locations are compatible with its transport capabilities (e.g., HTTP channel should reject `location: query` for `encrypted_data_out` since responses do not carry query parameters).
 
 ## Validation Constraints
 
