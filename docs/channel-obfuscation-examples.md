@@ -368,6 +368,74 @@ mapping:
 
 ---
 
+### 10. Adding noise — decoy fields
+
+Noise fields are transport-level decoys that carry no operational data. They make C2 traffic blend with legitimate traffic by adding extra headers, query parameters, or body fields. Channel strips inbound noise during decode and injects outbound noise during encode.
+
+```yaml
+# Implant sends: POST /api/data
+#   Header "X-Request-ID: <id>"
+#   Header "X-Trace-ID: <uuid>"          ← inbound noise
+#   Query  "_ref=<random>"               ← inbound noise
+#   Body   {"data": "<base64(encrypted_data)>"}
+# Channel returns:
+#   Header "X-Cache-Status: HIT|MISS|EXPIRED"  ← outbound noise
+#   Body   {"data": "<base64(encrypted_data)>"}
+
+profile_id: 10
+profile_label: http-with-noise
+enabled: true
+action:
+  type: sync
+mapping:
+  id:
+    target:
+      location: header
+      key: X-Request-ID
+  encrypted_data_in:
+    target:
+      location: body
+      key: data
+    transform:
+      - type: base64
+  encrypted_data_out:
+    target:
+      location: body
+      key: data
+    transform:
+      - type: base64
+noise:
+  inbound:
+    - target:
+        location: header
+        key: X-Trace-ID
+      value:
+        type: uuid
+    - target:
+        location: query
+        key: _ref
+      value:
+        type: alphanumeric
+        length: 8
+  outbound:
+    - target:
+        location: header
+        key: X-Cache-Status
+      value:
+        type: choice
+        values: ["HIT", "MISS", "EXPIRED"]
+```
+
+**What happens at runtime:**
+
+- **Inbound** — implant generates a random UUID for `X-Trace-ID` header and a random 8-char string for `_ref` query param before sending. Channel matches the profile using `mapping` fields only, then strips/ignores the noise fields during decode.
+- **Outbound** — channel encodes `encrypted_data` into the response body as usual, then injects a random `X-Cache-Status` header picked from the values list. Implant ignores this header.
+
+!!! note "Key takeaway"
+    `noise` is a sibling to `mapping`. It defines decoy fields per direction. Noise is never used for profile matching — it is processed only after a profile is matched. Noise keys must not collide with mapping keys.
+
+---
+
 ## Channel Catalog
 
 Ready-to-use profiles for common scenarios. Copy, adjust `profile_id`, and deploy.
@@ -583,6 +651,138 @@ mapping:
       - type: base64
 ```
 
+#### CDN blend with noise headers
+
+Extends the CDN blend profile with noise to mimic real CDN/proxy response headers and client telemetry.
+
+```yaml
+profile_id: 106
+profile_label: http-cdn-noise
+enabled: true
+action:
+  type: sync
+mapping:
+  profile_id:
+    target:
+      location: header
+      key: X-Correlation-ID
+    transform:
+      - type: prefix
+        value: "cor-"
+  id:
+    target:
+      location: header
+      key: X-Request-ID
+    transform:
+      - type: base64url
+  encrypted_data_in:
+    target:
+      location: body
+      key: data
+    transform:
+      - type: base64
+  encrypted_data_out:
+    target:
+      location: body
+      key: data
+    transform:
+      - type: base64
+noise:
+  inbound:
+    - target:
+        location: header
+        key: X-Forwarded-For
+      value:
+        type: choice
+        values: ["10.0.0.1", "172.16.0.50", "192.168.1.100"]
+    - target:
+        location: header
+        key: X-Client-Version
+      value:
+        type: alphanumeric
+        length: 6
+        prefix: "v"
+    - target:
+        location: query
+        key: _ts
+      value:
+        type: timestamp_ms
+  outbound:
+    - target:
+        location: header
+        key: X-Cache
+      value:
+        type: choice
+        values: ["HIT", "MISS", "EXPIRED", "STALE"]
+    - target:
+        location: header
+        key: X-Served-By
+      value:
+        type: alphanumeric
+        length: 12
+        prefix: "node-"
+    - target:
+        location: header
+        key: X-Response-Time
+      value:
+        type: range
+        min: 5
+        max: 250
+        suffix: "ms"
+```
+
+#### Random noise headers
+
+Uses random key generation to inject headers with unpredictable names, making traffic fingerprinting harder.
+
+```yaml
+profile_id: 107
+profile_label: http-random-noise
+enabled: true
+action:
+  type: sync
+mapping:
+  id:
+    target:
+      location: header
+      key: X-Request-ID
+  encrypted_data_in:
+    target:
+      location: body
+      key: payload
+    transform:
+      - type: base64
+  encrypted_data_out:
+    target:
+      location: body
+      key: payload
+    transform:
+      - type: base64
+noise:
+  inbound:
+    - target:
+        location: header
+        key:
+          type: alphanumeric
+          length: 8
+          prefix: "X-"
+      value:
+        type: hex
+        length: 16
+      count: 3
+  outbound:
+    - target:
+        location: header
+        key:
+          type: alphanumeric
+          length: 10
+          prefix: "X-"
+      value:
+        type: alphanumeric
+        length: 24
+      count: 2
+```
+
 ### Telegram Channel
 
 Telegram channel uses `message` as its primary location namespace.
@@ -656,15 +856,17 @@ mapping:
 
 ## Quick Reference
 
-| Profile | Action | Locations | Transforms |
-|---------|--------|-----------|------------|
-| http-json-api | sync | header, body | prefix, base64 |
-| http-cdn-blend | sync | header, body | prefix, base64url, base64 |
-| http-cookie-id | sync | cookie, body | base64url, base64 |
-| http-get-beacon | sync | query | base64url, url_encode |
-| http-mixed-placement | sync | header, query, body | prefix, base64url, base64 |
-| http-composite-prefixed | sync | body | prefix, base64 |
-| http-redirect-edge | redirect | query | — |
-| http-proxy-upstream | proxy_pass | header, body | — |
-| telegram-simple | sync | message | — |
-| telegram-marked-b64 | sync | message | prefix, base64url, base64 |
+| Profile | Action | Locations | Transforms | Noise |
+|---------|--------|-----------|------------|-------|
+| http-json-api | sync | header, body | prefix, base64 | — |
+| http-cdn-blend | sync | header, body | prefix, base64url, base64 | — |
+| http-cookie-id | sync | cookie, body | base64url, base64 | — |
+| http-get-beacon | sync | query, body | base64url, url_encode | — |
+| http-mixed-placement | sync | header, query, body | prefix, base64url, base64 | — |
+| http-composite-prefixed | sync | body | prefix, base64 | — |
+| http-cdn-noise | sync | header, body | prefix, base64url, base64 | inbound + outbound |
+| http-random-noise | sync | header, body | base64 | inbound + outbound (random keys) |
+| http-redirect-edge | redirect | query | — | — |
+| http-proxy-upstream | proxy_pass | header, body | — | — |
+| telegram-simple | sync | message | — | — |
+| telegram-marked-b64 | sync | message | prefix, base64url, base64 | — |

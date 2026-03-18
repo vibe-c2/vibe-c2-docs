@@ -19,6 +19,8 @@ A profile may define where and how fields are placed, for example:
 - body fields
 - mixed placement (split across multiple locations)
 
+A profile may also define noise (decoy) fields — extra headers, query parameters, body fields, or cookies that carry no operational data but help C2 traffic blend with legitimate traffic.
+
 In addition to `id` and `encrypted_data`, transport may carry `profile_id` hint used for fast profile selection.
 A profile may also define reversible encoding/wrapping, for example:
 
@@ -59,15 +61,17 @@ Inbound (implant/session -> channel -> core):
 5. Channel tries candidates ordered by runtime match frequency.
 6. On first successful decode to canonical fields (`id`, `encrypted_data`), channel uses that profile.
 7. If no candidate succeeds, channel rejects request as unmatched profile.
-8. After profile match, channel resolves and executes `action` from that profile.
-9. For process-style actions, channel sends canonical request to C2 sync endpoint after successful action resolution.
+8. After profile match, channel strips inbound noise fields (if defined) — they are ignored during decode.
+9. Channel resolves and executes `action` from that profile.
+10. For process-style actions, channel sends canonical request to C2 sync endpoint after successful action resolution.
 
 Outbound (core -> channel -> implant/session):
 
 1. Channel receives canonical response (`outbound.agent_message`) containing only `encrypted_data`.
 2. Channel uses the inbound-resolved profile and `encrypted_data_out` mapping to produce outbound transport payload. Outbound does not carry `id`.
-3. Channel returns transport-shaped response to implant/session.
-4. Channel updates profile usage counters/cache for future ordering.
+3. Channel injects outbound noise fields (if defined) into the transport response.
+4. Channel returns transport-shaped response to implant/session.
+5. Channel updates profile usage counters/cache for future ordering.
 
 ## Action examples
 

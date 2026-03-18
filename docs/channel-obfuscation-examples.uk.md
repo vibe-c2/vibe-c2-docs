@@ -368,6 +368,74 @@ mapping:
 
 ---
 
+### 10. Додавання шуму — поля-приманки
+
+Поля шуму — це приманки на транспортному рівні, які не несуть операційних даних. Вони допомагають C2-трафіку маскуватися під легітимний, додаючи зайві заголовки, query-параметри або поля body. Канал видаляє вхідний шум при декодуванні та додає вихідний шум при кодуванні.
+
+```yaml
+# Імплант відправляє: POST /api/data
+#   Header "X-Request-ID: <id>"
+#   Header "X-Trace-ID: <uuid>"          ← вхідний шум
+#   Query  "_ref=<random>"               ← вхідний шум
+#   Body   {"data": "<base64(encrypted_data)>"}
+# Канал повертає:
+#   Header "X-Cache-Status: HIT|MISS|EXPIRED"  ← вихідний шум
+#   Body   {"data": "<base64(encrypted_data)>"}
+
+profile_id: 10
+profile_label: http-with-noise
+enabled: true
+action:
+  type: sync
+mapping:
+  id:
+    target:
+      location: header
+      key: X-Request-ID
+  encrypted_data_in:
+    target:
+      location: body
+      key: data
+    transform:
+      - type: base64
+  encrypted_data_out:
+    target:
+      location: body
+      key: data
+    transform:
+      - type: base64
+noise:
+  inbound:
+    - target:
+        location: header
+        key: X-Trace-ID
+      value:
+        type: uuid
+    - target:
+        location: query
+        key: _ref
+      value:
+        type: alphanumeric
+        length: 8
+  outbound:
+    - target:
+        location: header
+        key: X-Cache-Status
+      value:
+        type: choice
+        values: ["HIT", "MISS", "EXPIRED"]
+```
+
+**Що відбувається під час виконання:**
+
+- **Вхідний** — імплант генерує випадковий UUID для заголовка `X-Trace-ID` та випадковий 8-символьний рядок для query-параметра `_ref` перед відправкою. Канал зіставляє профіль лише за полями `mapping`, потім ігнорує/видаляє поля шуму при декодуванні.
+- **Вихідний** — канал кодує `encrypted_data` у тіло відповіді як зазвичай, потім додає випадковий заголовок `X-Cache-Status`, обраний зі списку значень. Імплант ігнорує цей заголовок.
+
+!!! note "Ключовий висновок"
+    `noise` є сусідом `mapping`. Він визначає поля-приманки за напрямком. Шум ніколи не використовується для зіставлення профілів — він обробляється лише після зіставлення. Ключі шуму не повинні конфліктувати з ключами mapping.
+
+---
+
 ## Каталог каналів
 
 Готові до використання профілі для типових сценаріїв. Копіюйте, змінюйте `profile_id` та розгортайте.
@@ -583,6 +651,138 @@ mapping:
       - type: base64
 ```
 
+#### Маскування під CDN з заголовками шуму
+
+Розширює CDN blend профіль шумом для імітації реальних заголовків CDN/proxy-відповідей та клієнтської телеметрії.
+
+```yaml
+profile_id: 106
+profile_label: http-cdn-noise
+enabled: true
+action:
+  type: sync
+mapping:
+  profile_id:
+    target:
+      location: header
+      key: X-Correlation-ID
+    transform:
+      - type: prefix
+        value: "cor-"
+  id:
+    target:
+      location: header
+      key: X-Request-ID
+    transform:
+      - type: base64url
+  encrypted_data_in:
+    target:
+      location: body
+      key: data
+    transform:
+      - type: base64
+  encrypted_data_out:
+    target:
+      location: body
+      key: data
+    transform:
+      - type: base64
+noise:
+  inbound:
+    - target:
+        location: header
+        key: X-Forwarded-For
+      value:
+        type: choice
+        values: ["10.0.0.1", "172.16.0.50", "192.168.1.100"]
+    - target:
+        location: header
+        key: X-Client-Version
+      value:
+        type: alphanumeric
+        length: 6
+        prefix: "v"
+    - target:
+        location: query
+        key: _ts
+      value:
+        type: timestamp_ms
+  outbound:
+    - target:
+        location: header
+        key: X-Cache
+      value:
+        type: choice
+        values: ["HIT", "MISS", "EXPIRED", "STALE"]
+    - target:
+        location: header
+        key: X-Served-By
+      value:
+        type: alphanumeric
+        length: 12
+        prefix: "node-"
+    - target:
+        location: header
+        key: X-Response-Time
+      value:
+        type: range
+        min: 5
+        max: 250
+        suffix: "ms"
+```
+
+#### Випадкові заголовки шуму
+
+Використовує генерацію випадкових ключів для додавання заголовків з непередбачуваними назвами, що ускладнює фінгерпринтинг трафіку.
+
+```yaml
+profile_id: 107
+profile_label: http-random-noise
+enabled: true
+action:
+  type: sync
+mapping:
+  id:
+    target:
+      location: header
+      key: X-Request-ID
+  encrypted_data_in:
+    target:
+      location: body
+      key: payload
+    transform:
+      - type: base64
+  encrypted_data_out:
+    target:
+      location: body
+      key: payload
+    transform:
+      - type: base64
+noise:
+  inbound:
+    - target:
+        location: header
+        key:
+          type: alphanumeric
+          length: 8
+          prefix: "X-"
+      value:
+        type: hex
+        length: 16
+      count: 3
+  outbound:
+    - target:
+        location: header
+        key:
+          type: alphanumeric
+          length: 10
+          prefix: "X-"
+      value:
+        type: alphanumeric
+        length: 24
+      count: 2
+```
+
 ### Telegram-канал
 
 Telegram-канал використовує `message` як основний простір імен розташування.
@@ -656,15 +856,17 @@ mapping:
 
 ## Швидкий довідник
 
-| Профіль | Дія | Розташування | Трансформації |
-|---------|-----|-------------|---------------|
-| http-json-api | sync | header, body | prefix, base64 |
-| http-cdn-blend | sync | header, body | prefix, base64url, base64 |
-| http-cookie-id | sync | cookie, body | base64url, base64 |
-| http-get-beacon | sync | query | base64url, url_encode |
-| http-mixed-placement | sync | header, query, body | prefix, base64url, base64 |
-| http-composite-prefixed | sync | body | prefix, base64 |
-| http-redirect-edge | redirect | query | — |
-| http-proxy-upstream | proxy_pass | header, body | — |
-| telegram-simple | sync | message | — |
-| telegram-marked-b64 | sync | message | prefix, base64url, base64 |
+| Профіль | Дія | Розташування | Трансформації | Шум |
+|---------|-----|-------------|---------------|-----|
+| http-json-api | sync | header, body | prefix, base64 | — |
+| http-cdn-blend | sync | header, body | prefix, base64url, base64 | — |
+| http-cookie-id | sync | cookie, body | base64url, base64 | — |
+| http-get-beacon | sync | query, body | base64url, url_encode | — |
+| http-mixed-placement | sync | header, query, body | prefix, base64url, base64 | — |
+| http-composite-prefixed | sync | body | prefix, base64 | — |
+| http-cdn-noise | sync | header, body | prefix, base64url, base64 | вхідний + вихідний |
+| http-random-noise | sync | header, body | base64 | вхідний + вихідний (випадкові ключі) |
+| http-redirect-edge | redirect | query | — | — |
+| http-proxy-upstream | proxy_pass | header, body | — | — |
+| telegram-simple | sync | message | — | — |
+| telegram-marked-b64 | sync | message | prefix, base64url, base64 | — |
