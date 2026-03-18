@@ -10,9 +10,6 @@
   var scriptSrc = (document.currentScript || {}).src || '';
 
   function getBasePath() {
-    // Derive base from this script's resolved URL.
-    // MkDocs references it as <base>/js/lang-switcher.js with relative paths,
-    // so the browser resolves it to the correct absolute URL regardless of page depth.
     if (scriptSrc) {
       try {
         var url = new URL(scriptSrc);
@@ -42,9 +39,7 @@
 
   function getPagePath() {
     var path = window.location.pathname;
-    // Strip base prefix
     if (BASE) path = path.substring(BASE.length);
-    // Strip locale prefix
     var current = getCurrentLocale();
     if (current !== 'en') {
       path = path.substring(('/' + current).length);
@@ -60,58 +55,32 @@
     return BASE + '/' + locale + (page === '/' ? '/' : page);
   }
 
-  function createSwitcher() {
-    var current = getCurrentLocale();
-    var currentLang = LANGUAGES.find(function (l) { return l.locale === current; });
-
-    var container = document.createElement('div');
-    container.className = 'lang-switcher';
-
-    var btn = document.createElement('button');
-    btn.className = 'lang-switcher__btn';
-    btn.textContent = currentLang ? currentLang.name : 'EN';
-    btn.setAttribute('aria-label', 'Switch language');
-    btn.setAttribute('type', 'button');
-
-    var dropdown = document.createElement('div');
-    dropdown.className = 'lang-switcher__dropdown';
-
-    LANGUAGES.forEach(function (lang) {
-      var link = document.createElement('a');
-      link.href = buildUrl(lang.locale);
-      link.textContent = lang.name;
-      link.className = 'lang-switcher__item';
-      if (lang.locale === current) {
-        link.classList.add('lang-switcher__item--active');
-      }
-      dropdown.appendChild(link);
-    });
-
-    btn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      container.classList.toggle('lang-switcher--open');
-    });
-
-    document.addEventListener('click', function () {
-      container.classList.remove('lang-switcher--open');
-    });
-
-    container.appendChild(btn);
-    container.appendChild(dropdown);
-
-    return container;
-  }
-
   function inject() {
-    // Avoid double-injection
     if (document.querySelector('.lang-switcher')) return;
 
-    var target = document.querySelector('.wy-nav-top') ||
-                 document.querySelector('[role="navigation"]') ||
-                 document.body;
+    var current = getCurrentLocale();
 
-    var switcher = createSwitcher();
-    document.body.appendChild(switcher);
+    // Build the other-language link
+    var target = LANGUAGES.find(function (l) { return l.locale !== current; });
+    if (!target) return;
+
+    // Create a navbar <li> item matching the theme's nav structure
+    var li = document.createElement('li');
+    li.className = 'nav-item lang-switcher';
+
+    var link = document.createElement('a');
+    link.href = buildUrl(target.locale);
+    link.className = 'nav-link';
+    link.textContent = target.name;
+    link.setAttribute('aria-label', 'Switch to ' + target.name);
+
+    li.appendChild(link);
+
+    // Insert into the right-side navbar (ms-md-auto)
+    var rightNav = document.querySelector('ul.navbar-nav.ms-md-auto');
+    if (rightNav) {
+      rightNav.appendChild(li);
+    }
   }
 
   if (document.readyState === 'loading') {
