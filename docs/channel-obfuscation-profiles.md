@@ -61,9 +61,8 @@ Inbound (implant/session -> channel -> core):
 5. Channel tries candidates ordered by runtime match frequency.
 6. On first successful decode to canonical fields (`id`, `encrypted_data`), channel uses that profile.
 7. If no candidate succeeds, channel rejects request as unmatched profile.
-8. After profile match, channel strips inbound noise fields (if defined) — they are ignored during decode.
-9. Channel resolves and executes `action` from that profile.
-10. For process-style actions, channel sends canonical request to C2 sync endpoint after successful action resolution.
+8. After profile match, channel resolves and executes `action` from that profile. Any inbound noise fields added by the implant are naturally ignored — the channel only reads fields defined in `mapping`.
+9. For process-style actions, channel sends canonical request to C2 sync endpoint after successful action resolution.
 
 Outbound (core -> channel -> implant/session):
 

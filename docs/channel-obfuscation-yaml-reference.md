@@ -130,7 +130,7 @@ Supported transform types (v1):
 
 `noise`:
 
-- `inbound[]` (optional): list of noise entries that the implant adds to requests. Channel strips/ignores these during decode.
+- `inbound[]` (optional): list of noise entries that the implant adds to requests. The channel does not process inbound noise — it only extracts fields defined in `mapping` and naturally ignores everything else.
 - `outbound[]` (optional): list of noise entries that the channel injects into responses. Implant ignores these.
 
 Each noise entry:
@@ -174,7 +174,7 @@ noise:
 
 ### Direction semantics
 
-- **Inbound noise**: implant generates and sends these fields. Channel recognizes them by fixed key name and ignores them during decode. For random-key noise, channel ignores all keys in that location that are not defined in `mapping`.
+- **Inbound noise**: implant generates and adds these decoy fields to its requests. The channel does not need to process, strip, or validate inbound noise — it only reads fields defined in `mapping` and naturally ignores everything else. Inbound noise definitions in the profile serve as a contract for the implant.
 - **Outbound noise**: channel generates and injects these fields into the response. Implant ignores them on receive.
 - Noise generation happens per-request (inbound: implant-side, outbound: channel-side). Each request/response gets fresh random values.
 

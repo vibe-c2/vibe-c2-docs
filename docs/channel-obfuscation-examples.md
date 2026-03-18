@@ -370,7 +370,7 @@ mapping:
 
 ### 10. Adding noise — decoy fields
 
-Noise fields are transport-level decoys that carry no operational data. They make C2 traffic blend with legitimate traffic by adding extra headers, query parameters, or body fields. Channel strips inbound noise during decode and injects outbound noise during encode.
+Noise fields are transport-level decoys that carry no operational data. They make C2 traffic blend with legitimate traffic by adding extra headers, query parameters, or body fields. Inbound noise is added by the implant and naturally ignored by the channel (it only reads `mapping` fields). Outbound noise is injected by the channel into responses.
 
 ```yaml
 # Implant sends: POST /api/data
@@ -428,11 +428,11 @@ noise:
 
 **What happens at runtime:**
 
-- **Inbound** — implant generates a random UUID for `X-Trace-ID` header and a random 8-char string for `_ref` query param before sending. Channel matches the profile using `mapping` fields only, then strips/ignores the noise fields during decode.
+- **Inbound** — implant generates a random UUID for `X-Trace-ID` header and a random 8-char string for `_ref` query param before sending. Channel only reads fields defined in `mapping` and naturally ignores the noise — no extra processing required.
 - **Outbound** — channel encodes `encrypted_data` into the response body as usual, then injects a random `X-Cache-Status` header picked from the values list. Implant ignores this header.
 
 !!! note "Key takeaway"
-    `noise` is a sibling to `mapping`. It defines decoy fields per direction. Noise is never used for profile matching — it is processed only after a profile is matched. Noise keys must not collide with mapping keys.
+    `noise` is a sibling to `mapping`. It defines decoy fields per direction. Inbound noise is purely implant-side — the channel ignores it naturally. Outbound noise is injected by the channel. Noise keys must not collide with mapping keys.
 
 ---
 
