@@ -27,7 +27,7 @@ The project exists to enable people to:
 
 ## Structure
 
-- `Project Scope`: business context, goals, non-goals.
-- `Tech Requirements`: core requirements and constraints.
-- `Architecture Draft`: initial component and deployment model.
-- `ADR`: decision log for major technical choices.
+- **Foundations** — project scope, technical requirements, architecture draft, core responsibilities, module taxonomy, full-system message flow.
+- **Channels** — channel-specific message flow, message contracts, obfuscation profiles (concepts, YAML reference, examples), per-channel module docs, and a 15-minute channel authoring guide.
+- **Go Packages Ecosystem** — docs for shared Go packages: protocol message contracts and channel runtime SDK.
+- **ADR** — Architecture Decision Records for major technical choices.
