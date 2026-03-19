@@ -46,6 +46,7 @@ nav:
       - Project Scope: project-scope.md
       - Tech Requirements: tech-requirements.md
       - Architecture Draft: architecture.md
+      - Core Infrastructure: core-infrastructure.md
       - Core Responsibilities: core-responsibilities.md
       - Module Types: module-types.md
       - Message Flow (Full System): message-flow-full.md
