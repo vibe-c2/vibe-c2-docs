@@ -38,6 +38,10 @@ export default defineConfig({
         uk: { label: 'Українська', lang: 'uk' },
       },
       customCss: ['./src/styles/global.css'],
+      components: {
+        // Full-width content + floating "On this page" overlay instead of a TOC column.
+        TwoColumnContent: './src/overrides/TwoColumnContent.astro',
+      },
       sidebar: [
         {
           label: 'Home',
