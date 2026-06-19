@@ -39,9 +39,6 @@ graph TD
     IP -- "artifact upload" --> SFS
 
     CS -.-> OBS
-    CH -.-> OBS
-    TR -.-> OBS
-    IP -.-> OBS
     RMQ -.-> OBS
     DB -.-> OBS
 ```
@@ -78,7 +75,11 @@ MongoDB resolves the database engine decision listed as pending in the
 
 - **Role**: centralized collection of logs, metrics, and traces from all services. Supports auditability requirements ([FR-09](../tech-requirements/)) and operational reliability targets.
 - **Components**: structured logging aggregation, metrics collection, and distributed tracing. Specific tooling (e.g. Prometheus, Grafana, Loki) is not yet prescribed — this section captures the role, not the implementation.
-- **Connections**: all services emit structured logs and health signals. Core server and modules expose health/metrics endpoints. The observability stack scrapes/collects from all containers.
+- **Connections**: observability covers the trusted core domain only — Core Server, RabbitMQ, and MongoDB. **Modules emit no telemetry to the stack.** As the internet-facing, plaintext-blind edge, channel and other modules are deliberately excluded to avoid giving an exposed component a path into the monitoring plane. Module behavior is observed indirectly at the core server (AMQP RPC, HTTP sync, published events, broker queue depth/errors), and container `stdout`/`stderr` remains available for local triage via `docker logs`.
+
+:::note
+Excluding modules does not weaken auditability ([FR-09](../tech-requirements/)). The audit-relevant state — operator actions, agent registrations, task history — is held entirely at the core server and MongoDB. Modules are plaintext-blind relays with no auditable state of their own.
+:::
 
 ## Service Communication Summary
 
@@ -92,4 +93,4 @@ MongoDB resolves the database engine decision listed as pending in the
 | Core Server | MongoDB | MongoDB wire protocol | State persistence, audit logs |
 | Core Server | SeaweedFS | HTTP (S3-compatible) | Artifact storage and retrieval |
 | Implant Providers | SeaweedFS | HTTP (S3-compatible) | Artifact upload |
-| All services | Observability | Structured logs / metrics | Monitoring and audit |
+| Core Server, RabbitMQ, MongoDB | Observability | Structured logs / metrics | Monitoring and audit (core domain only; modules excluded) |
