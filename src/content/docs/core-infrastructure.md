@@ -18,7 +18,7 @@ graph TD
 
         subgraph modules["Modules"]
             CH[Channel Modules]
-            IP[Minion Provider Modules]
+            IP[Minion Factory Modules]
         end
 
         subgraph obs["Observability"]
@@ -47,7 +47,7 @@ graph TD
 
 - **Role**: asynchronous communication backbone between core server and all modules. Carries control-plane RPC (e.g. transposition profile CRUD), event notifications, and module coordination messages. Does **not** carry minion traffic — that flows via the HTTP sync endpoint.
 - **Why RabbitMQ**: mature AMQP broker with exchange/queue routing patterns suited to module-type-based message routing, dead-letter queues for reliability ([FR-05](../tech-requirements/)), and per-queue ACLs for trust boundary enforcement.
-- **Connections**: Core Server (publisher/consumer), Channel Modules, Minion Provider Modules — all communicate over AMQP.
+- **Connections**: Core Server (publisher/consumer), Channel Modules, Minion Factory Modules — all communicate over AMQP.
 
 ## MongoDB — Persistence Layer
 
@@ -61,9 +61,9 @@ MongoDB resolves the database engine decision listed as pending in the
 :::
 ## SeaweedFS — Blob Storage
 
-- **Role**: distributed object/blob storage for large artifacts — minion build outputs from [Minion Provider Modules](../module-types/), staged payloads, and file exfiltration results.
+- **Role**: distributed object/blob storage for large artifacts — minion build outputs from [Minion Factory Modules](../module-types/), staged payloads, and file exfiltration results.
 - **Why SeaweedFS**: lightweight, self-hosted, S3-compatible API. Avoids external cloud dependencies and keeps binary blobs out of the document database.
-- **Connections**: Core Server (read/write), Minion Provider Modules (artifact upload).
+- **Connections**: Core Server (read/write), Minion Factory Modules (artifact upload).
 
 ## Docker Compose — Deployment Orchestration
 
@@ -83,9 +83,9 @@ MongoDB resolves the database engine decision listed as pending in the
 |---|---|---|---|
 | Core Server | RabbitMQ | AMQP | Module coordination, RPC, events |
 | Channel Modules | RabbitMQ | AMQP | Profile management RPC, event publishing |
-| Minion Providers | RabbitMQ | AMQP | Build coordination |
+| Minion Factories | RabbitMQ | AMQP | Build coordination |
 | Channel Modules | Core Server | HTTP | Minion sync (`POST /api/channel/sync`) |
 | Core Server | MongoDB | MongoDB wire protocol | State persistence, audit logs |
 | Core Server | SeaweedFS | HTTP (S3-compatible) | Artifact storage and retrieval |
-| Minion Providers | SeaweedFS | HTTP (S3-compatible) | Artifact upload |
+| Minion Factories | SeaweedFS | HTTP (S3-compatible) | Artifact upload |
 | All services | Observability | Structured logs / metrics | Monitoring and audit |

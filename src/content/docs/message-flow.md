@@ -4,7 +4,7 @@ title: "Channel Message Flow (Isolated)"
 
 This page documents **channel-only** flow and responsibilities.
 
-It intentionally excludes internal core processing layers such as minion providers.
+It intentionally excludes internal core processing layers such as minion factories.
 
 ## Channel-Centric Sequence
 
@@ -36,4 +36,4 @@ sequenceDiagram
 
 - Channel does **not** decrypt payload plaintext.
 - Channel does **not** execute core business logic.
-- Channel does **not** own minion-provider semantics.
+- Channel does **not** own minion-factory semantics.

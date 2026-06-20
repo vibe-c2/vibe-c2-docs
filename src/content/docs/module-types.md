@@ -40,9 +40,9 @@ Channel modules provide transport paths between minions and the core Server plat
 - Enforce per-channel authentication and abuse controls.
 - Expose channel health and queue lag metrics.
 
-## 2) Minion Provider Modules
+## 2) Minion Factory Modules
 
-Minion provider modules define minion families and lifecycle behavior.
+Minion factory modules define minion families and lifecycle behavior.
 
 ### Responsibilities
 
@@ -54,39 +54,39 @@ Minion provider modules define minion families and lifecycle behavior.
 
 ### Examples
 
-- Go minion provider
-- .NET minion provider
-- Python minion provider
+- Go minion factory
+- .NET minion factory
+- Python minion factory
 
 ### Optional Translator Hooks
 
 By default, the preprocess/postprocess responsibilities above map directly
-between the normalized C2 model and the minion wire format. A provider that
+between the normalized C2 model and the minion wire format. A factory that
 wants a **custom language for its minions** may optionally implement translator
 hooks to insert its own intermediate representation:
 
 - `translate_outbound` — convert a normalized C2 command intent into the
-  provider's custom minion language before it is serialized to wire format.
-- `translate_inbound` — convert a raw minion response in the provider's custom
+  factory's custom minion language before it is serialized to wire format.
+- `translate_inbound` — convert a raw minion response in the factory's custom
   language back into the normalized C2 result schema.
 
-Hooks are an implementation detail **owned entirely by the provider** — they are
-not a separate module or deployable. Providers that need no custom language
+Hooks are an implementation detail **owned entirely by the factory** — they are
+not a separate module or deployable. Factories that need no custom language
 simply omit them and rely on the default direct mapping.
 
-Guidance for providers that implement them:
+Guidance for factories that implement them:
 
-- Translator hooks run inside the provider, a core-side processing layer that
+- Translator hooks run inside the factory, a core-side processing layer that
   operates on already-decrypted plaintext. They never cross the channel trust
   boundary and never touch payload crypto.
 - Keep hooks deterministic and test-heavy.
 - Make the mapping explicit; avoid hidden heuristic behavior in critical paths.
-- Version the custom language alongside the provider's command contracts.
+- Version the custom language alongside the factory's command contracts.
 
 ### Notes
 
-- Keep provider-specific command grammar encapsulated.
-- Version command contracts per minion provider.
+- Keep factory-specific command grammar encapsulated.
+- Version command contracts per minion factory.
 - Track capability flags per minion build (supported commands/features).
 
 ## Cross-Cutting Module Requirements
@@ -110,4 +110,4 @@ Create an ADR that freezes:
 
 1. Base message envelope format (`message_id`, `correlation_id`, `type`, `version`, `payload`, `timestamp`).
 2. Exchange/queue naming convention.
-3. Ownership boundaries between channel and minion-provider modules.
+3. Ownership boundaries between channel and minion-factory modules.

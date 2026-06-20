@@ -39,7 +39,7 @@ Content lives in `src/content/docs/` — English at the root, Ukrainian under `u
 
 ## Key Concepts for Editing Docs
 
-- **Three module types**: Channel Modules (transport), Implant Provider Modules (build artifacts), Translator Modules (format conversion). Channels are plaintext-blind — they relay encrypted blobs only.
+- **Three module types**: Channel Modules (transport), Minion Factory Modules (build artifacts), Translator Modules (format conversion). Channels are plaintext-blind — they relay encrypted blobs only.
 - **Message contracts** are versioned (`inbound.agent_message`, `outbound.agent_message`). The canonical fields are `id` and `encrypted_data`.
 - **Obfuscation profiles** are YAML-defined transport-shaping configurations that map `id`/`encrypted_data` into channel-specific locations using transform chains. The `custom_mapping` block handles channel-specific grouped data.
 - **Transform chains** have explicit ordering: outbound applies transforms top-to-bottom, inbound reverses them bottom-to-top.

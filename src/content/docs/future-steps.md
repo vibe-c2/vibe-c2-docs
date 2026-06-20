@@ -20,7 +20,7 @@ This page tracks planned follow-ups and open ideas that are not yet finalized as
   - dead-letter and retry queues
 - Freeze module ownership boundaries:
   - what belongs to `channel`
-  - what belongs to `minion provider`
+  - what belongs to `minion factory`
 
 ## Implementation Ideas
 
