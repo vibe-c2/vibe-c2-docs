@@ -29,7 +29,7 @@ title: "Tech Requirements"
 ## FR-05: RabbitMQ Messaging Backbone
 
 - Core server and modules must communicate over RabbitMQ channels/queues.
-- Implant traffic between channel and core must use request/response via HTTP (`POST /api/channel/sync`).
+- Minion traffic between channel and core must use request/response via HTTP (`POST /api/channel/sync`).
 - Core HTTP response returns encrypted outbound payload for the same `id` (or encrypted no-op payload).
 - Queue topology must support routing by message type and module responsibility.
 - Critical message flows must support acknowledgements and retry/dead-letter behavior.
@@ -83,7 +83,7 @@ title: "Tech Requirements"
 ## NFR-03: Performance
 
 - Operator command response time target: p95 < 500 ms for metadata operations.
-- Agent check-in handling must scale to expected MVP load.
+- Minion check-in handling must scale to expected MVP load.
 
 ## NFR-04: Maintainability
 

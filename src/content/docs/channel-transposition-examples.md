@@ -137,7 +137,7 @@ When multiple transforms are chained, order is critical. Outbound applies top-to
 
 ```yaml
 # Minion sends the id as: base64url(prefix("minion:", <id>))
-# Example: canonical id "abc123" → prefixed "minion:abc123" → base64url "YWdlbnQ6YWJjMTIz"
+# Example: canonical id "abc123" → prefixed "minion:abc123" → base64url "bWluaW9uOmFiYzEyMw"
 
 profile_id: 4
 profile_label: http-chain-demo
@@ -171,10 +171,10 @@ mapping:
 
 - **Outbound** (encode `id` for transport):
     1. `prefix` → `minion:abc123`
-    2. `base64url` → `YWdlbnQ6YWJjMTIz`
+    2. `base64url` → `bWluaW9uOmFiYzEyMw`
     3. Written to header `X-Session`
 - **Inbound** (decode `id` from transport):
-    1. Read header `X-Session`: `YWdlbnQ6YWJjMTIz`
+    1. Read header `X-Session`: `bWluaW9uOmFiYzEyMw`
     2. `base64url` decode → `minion:abc123`
     3. `prefix` decode (strip `minion:`) → `abc123`
 
@@ -206,7 +206,7 @@ mapping:
   id:
     target:
       location: header
-      key: X-Agent-ID
+      key: X-Minion-ID
   encrypted_data_in:
     target:
       location: body
@@ -354,7 +354,7 @@ mapping:
   id:
     target:
       location: header
-      key: X-Agent-ID
+      key: X-Minion-ID
   encrypted_data_in:
     target:
       location: body

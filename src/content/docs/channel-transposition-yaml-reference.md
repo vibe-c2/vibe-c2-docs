@@ -205,8 +205,8 @@ transform:
 
 Order semantics:
 
-- **Outbound** (`channel -> minion`): apply in listed order `T1 -> T2 -> T3`.
-- **Inbound** (`minion -> channel`): apply in reverse order `T3 -> T2 -> T1`.
+- **Outbound** (`channel -> minion`): apply each transform in listed (index) order `T1 -> T2 -> T3`.
+- **Inbound** (`minion -> channel`): apply the inverse of each transform in reverse index order — `T3⁻¹ -> T2⁻¹ -> T1⁻¹`.
 
 Think of it as function composition:
 

@@ -8,7 +8,7 @@ title: "Architecture Draft"
 - **Operator UI / API Client**: operator-facing interface for tasking, monitoring, and administration.
 - **Module Services**: independent services implementing capabilities (for example: task dispatcher, result processor, notification service).
 - **Message Bus (RabbitMQ)**: asynchronous communication backbone between core server and modules via channels/queues.
-- **Persistence Layer**: durable storage for users, agents, tasks, module state, and audit logs.
+- **Persistence Layer**: durable storage for users, minions, tasks, module state, and audit logs.
 - **Telemetry / Logging**: centralized collection of operational and security events.
 
 ## Communication Ownership Model
@@ -41,7 +41,7 @@ title: "Architecture Draft"
 
 ## Trust Boundaries
 
-- Internet/agent network to core server entrypoint.
+- Internet/minion network to core server entrypoint.
 - Operator network to core server entrypoint.
 - Core server/modules to RabbitMQ.
 - Core server/modules to database.
