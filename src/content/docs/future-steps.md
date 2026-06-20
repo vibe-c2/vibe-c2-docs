@@ -21,7 +21,6 @@ This page tracks planned follow-ups and open ideas that are not yet finalized as
 - Freeze module ownership boundaries:
   - what belongs to `channel`
   - what belongs to `minion provider`
-  - what belongs to `translator`
 
 ## Implementation Ideas
 

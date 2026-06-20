@@ -18,7 +18,6 @@ graph TD
 
         subgraph modules["Modules"]
             CH[Channel Modules]
-            TR[Translator Modules]
             IP[Minion Provider Modules]
         end
 
@@ -28,7 +27,6 @@ graph TD
     end
 
     CH -- "AMQP: RPC, events" --> RMQ
-    TR -- "AMQP" --> RMQ
     IP -- "AMQP" --> RMQ
     CS -- "AMQP: coordination" --> RMQ
 
@@ -40,7 +38,6 @@ graph TD
 
     CS -.-> OBS
     CH -.-> OBS
-    TR -.-> OBS
     IP -.-> OBS
     RMQ -.-> OBS
     DB -.-> OBS
@@ -50,7 +47,7 @@ graph TD
 
 - **Role**: asynchronous communication backbone between core server and all modules. Carries control-plane RPC (e.g. transposition profile CRUD), event notifications, and module coordination messages. Does **not** carry minion traffic — that flows via the HTTP sync endpoint.
 - **Why RabbitMQ**: mature AMQP broker with exchange/queue routing patterns suited to module-type-based message routing, dead-letter queues for reliability ([FR-05](../tech-requirements/)), and per-queue ACLs for trust boundary enforcement.
-- **Connections**: Core Server (publisher/consumer), Channel Modules, Translator Modules, Implant Provider Modules — all communicate over AMQP.
+- **Connections**: Core Server (publisher/consumer), Channel Modules, Minion Provider Modules — all communicate over AMQP.
 
 ## MongoDB — Persistence Layer
 
@@ -86,7 +83,6 @@ MongoDB resolves the database engine decision listed as pending in the
 |---|---|---|---|
 | Core Server | RabbitMQ | AMQP | Module coordination, RPC, events |
 | Channel Modules | RabbitMQ | AMQP | Profile management RPC, event publishing |
-| Translator Modules | RabbitMQ | AMQP | Translation coordination |
 | Minion Providers | RabbitMQ | AMQP | Build coordination |
 | Channel Modules | Core Server | HTTP | Minion sync (`POST /api/channel/sync`) |
 | Core Server | MongoDB | MongoDB wire protocol | State persistence, audit logs |

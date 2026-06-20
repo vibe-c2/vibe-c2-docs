@@ -64,28 +64,6 @@ Minion provider modules define minion families and lifecycle behavior.
 - Version command contracts per minion provider.
 - Track capability flags per minion build (supported commands/features).
 
-## 3) Translator Modules
-
-Translator modules convert between "minion language" and internal C2 language/model.
-
-### Responsibilities
-
-- Translate generic C2 command intents to minion-specific command forms.
-- Translate minion-specific responses into normalized C2 result schema.
-- Handle bidirectional mapping, field normalization, and error code translation.
-- Support multiple provider versions through explicit mapping profiles.
-
-### Examples
-
-- Generic task model -> Go minion v1 command map
-- Go minion v1 responses -> normalized C2 result model
-
-### Notes
-
-- Translators should be deterministic and test-heavy.
-- Avoid mixing transport responsibilities into translator modules.
-- Keep mappings explicit; avoid hidden heuristic behavior in critical paths.
-
 ## Cross-Cutting Module Requirements
 
 All module types should:
@@ -107,4 +85,4 @@ Create an ADR that freezes:
 
 1. Base message envelope format (`message_id`, `correlation_id`, `type`, `version`, `payload`, `timestamp`).
 2. Exchange/queue naming convention.
-3. Ownership boundaries between channel/provider/translator modules.
+3. Ownership boundaries between channel and minion-provider modules.
