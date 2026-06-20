@@ -11,7 +11,7 @@ Vibe C2 is community-centered and aims to let anyone vibe-code modules and vibe-
 
 Without a reusable SDK foundation, every new channel implementation must rebuild:
 - canonical message handling
-- obfuscation profile parsing/matching
+- transposition profile parsing/matching
 - profile validation/conflict checks
 - sync client behavior (timeouts/retries)
 - management interfaces
@@ -20,21 +20,21 @@ This slows contributors and creates inconsistent behavior across channels.
 
 The system also has specific constraints:
 - channel modules must remain plaintext-blind
-- implant/session <-> C2 communication is app-level encrypted
+- minion <-> C2 communication is app-level encrypted
 - channel<->C2 data-plane uses HTTP sync (`POST /api/channel/sync`)
-- obfuscation profile management remains channel-controlled and exposed to C2 via RabbitMQ RPC
+- transposition profile management remains channel-controlled and exposed to C2 via RabbitMQ RPC
 
 ## Decision
 
 Adopt a package ecosystem with clear separation of concerns:
 
 1. `vibe-c2-golang-protocol` (shared contracts)
-   - canonical message structs (`inbound.agent_message`, `outbound.agent_message`)
+   - canonical message structs (`inbound.minion_message`, `outbound.minion_message`)
    - versioning and validation helpers
    - shared status/error codes
 
 2. `vibe-c2-golang-channel-core` (channel runtime SDK)
-   - runtime pipeline: transport -> de-obfuscate -> canonicalize -> sync -> re-obfuscate -> transport
+   - runtime pipeline: transport -> de-transpose -> canonicalize -> sync -> re-transpose -> transport
    - profile engine (YAML parsing, semantic validation, overlap detection)
    - profile selection strategy (`profile_id` hint first, cache/frequency optimization, then brute-force enabled profiles)
    - sync client for `POST /api/channel/sync`
@@ -48,7 +48,7 @@ Adopt a package ecosystem with clear separation of concerns:
 
 - Channels never decrypt `encrypted_data`.
 - Canonical channel-core contract remains `id` + `encrypted_data`.
-- Obfuscation is transport shaping, not cryptographic replacement.
+- Transposition is transport shaping, not cryptographic replacement.
 - Profile selection must not depend on a default profile; use hint-first then brute-force enabled profiles.
 - Profile create/update operations must reject ambiguous overlap.
 

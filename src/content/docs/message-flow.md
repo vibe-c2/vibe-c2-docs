@@ -4,36 +4,36 @@ title: "Channel Message Flow (Isolated)"
 
 This page documents **channel-only** flow and responsibilities.
 
-It intentionally excludes internal core processing layers such as translators and implant providers.
+It intentionally excludes internal core processing layers such as translators and minion providers.
 
 ## Channel-Centric Sequence
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant I as Implant/Session
+    participant I as Minion
     participant CH as Channel Module
     participant CS as Core Server
 
-    I->>CH: transport message (obfuscated id + encrypted_data)
+    I->>CH: transport message (transpositioned id + encrypted_data)
     CH->>CH: resolve profile (hint -> brute-force enabled profiles)
-    CH->>CH: de-obfuscate to canonical id + encrypted_data
-    CH->>CS: POST /api/channel/sync (inbound.agent_message)
-    CS-->>CH: HTTP 200 outbound.agent_message (encrypted_data)
-    CH->>CH: re-obfuscate response by active profile
-    CH-->>I: transport response (obfuscated id + encrypted_data)
+    CH->>CH: de-transpose to canonical id + encrypted_data
+    CH->>CS: POST /api/channel/sync (inbound.minion_message)
+    CS-->>CH: HTTP 200 outbound.minion_message (encrypted_data)
+    CH->>CH: re-transpose response by active profile
+    CH-->>I: transport response (transpositioned id + encrypted_data)
 ```
 
 ## Channel Responsibilities
 
 - Transport adaptation (HTTP/Telegram/etc.).
-- Obfuscation profile resolution and mapping.
+- Transposition profile resolution and mapping.
 - Canonicalization to `id` + `encrypted_data`.
 - Forwarding canonical request to core sync endpoint.
-- Returning core response to implant/session in transport form.
+- Returning core response to minion in transport form.
 
 ## Channel Boundaries
 
 - Channel does **not** decrypt payload plaintext.
 - Channel does **not** execute core business logic.
-- Channel does **not** own translator/implant-provider semantics.
+- Channel does **not** own translator/minion-provider semantics.

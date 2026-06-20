@@ -1,11 +1,11 @@
 ---
-title: "Obfuscation Profile Examples"
+title: "Transposition Profile Examples"
 ---
 
-Obfuscation profiles control how the canonical C2 message fields (`id` and `encrypted_data`) are placed, named, and encoded in channel transport. They are YAML files that map canonical fields into channel-specific locations (headers, body, query params, cookies, message fields) and optionally apply reversible transform chains. This page is a self-contained walkthrough — every concept is introduced through a complete, runnable profile.
+Transposition profiles control how the canonical C2 message fields (`id` and `encrypted_data`) are placed, named, and encoded in channel transport. They are YAML files that map canonical fields into channel-specific locations (headers, body, query params, cookies, message fields) and optionally apply reversible transform chains. This page is a self-contained walkthrough — every concept is introduced through a complete, runnable profile.
 
-For architecture and runtime behavior see [Channel Obfuscation Profiles](../channel-obfuscation-profiles/).
-For field-level schema details see [YAML Reference](../channel-obfuscation-yaml-reference/).
+For architecture and runtime behavior see [Channel Transposition Profiles](../channel-transposition-profiles/).
+For field-level schema details see [YAML Reference](../channel-transposition-yaml-reference/).
 
 ---
 
@@ -18,7 +18,7 @@ Each example builds on the previous one. All examples use the HTTP channel unles
 The simplest working profile. Both `id` and `encrypted_data` travel as named JSON body fields with no encoding.
 
 ```yaml
-# Implant sends: POST /sync  {"agent_id": "<id>", "payload": "<encrypted_data>"}
+# Minion sends: POST /sync  {"minion_id": "<id>", "payload": "<encrypted_data>"}
 # Channel returns: {"payload": "<encrypted_data>"}
 
 profile_id: 1
@@ -30,7 +30,7 @@ mapping:
   id:
     target:
       location: body      # channel-defined location namespace
-      key: agent_id       # JSON field name for this value
+      key: minion_id       # JSON field name for this value
   encrypted_data_in:
     target:
       location: body
@@ -43,7 +43,7 @@ mapping:
 
 **What happens at runtime:**
 
-- **Inbound** — channel reads `agent_id` from request body as `id`, reads `payload` as `encrypted_data`. Forwards canonical message to C2.
+- **Inbound** — channel reads `minion_id` from request body as `id`, reads `payload` as `encrypted_data`. Forwards canonical message to C2.
 - **Outbound** — channel takes C2 response `encrypted_data`, writes it to response body as `payload`.
 
 :::note[Key takeaway]
@@ -53,10 +53,10 @@ A profile needs at minimum: `profile_id`, `enabled`, `action`, and mappings for 
 
 ### 2. Adding a single transform — base64
 
-Transforms shape data between the transport format (what the implant sends/receives) and the canonical format (what the channel forwards to C2). Here, the implant base64-encodes the payload before sending.
+Transforms shape data between the transport format (what the minion sends/receives) and the canonical format (what the channel forwards to C2). Here, the minion base64-encodes the payload before sending.
 
 ```yaml
-# Implant sends: POST /sync  {"sid": "<id>", "data": "<base64(encrypted_data)>"}
+# Minion sends: POST /sync  {"sid": "<id>", "data": "<base64(encrypted_data)>"}
 # Channel returns: {"data": "<base64(encrypted_data)>"}
 
 profile_id: 2
@@ -98,7 +98,7 @@ Transforms listed in `transform[]` are applied **outbound top-to-bottom** (encod
 Fields don't have to live in the same location. Here `id` travels in an HTTP header while `encrypted_data` stays in the body.
 
 ```yaml
-# Implant sends: POST /api/data  Header "X-Request-ID: <id>"  Body {"data": "<encrypted_data>"}
+# Minion sends: POST /api/data  Header "X-Request-ID: <id>"  Body {"data": "<encrypted_data>"}
 # Channel returns: {"data": "<encrypted_data>"}
 
 profile_id: 3
@@ -136,8 +136,8 @@ mapping:
 When multiple transforms are chained, order is critical. Outbound applies top-to-bottom; inbound reverses (bottom-to-top).
 
 ```yaml
-# Implant sends the id as: base64url(prefix("agent:", <id>))
-# Example: canonical id "abc123" → prefixed "agent:abc123" → base64url "YWdlbnQ6YWJjMTIz"
+# Minion sends the id as: base64url(prefix("minion:", <id>))
+# Example: canonical id "abc123" → prefixed "minion:abc123" → base64url "YWdlbnQ6YWJjMTIz"
 
 profile_id: 4
 profile_label: http-chain-demo
@@ -150,8 +150,8 @@ mapping:
       location: header
       key: X-Session
     transform:
-      - type: prefix         # step 1 outbound: prepend "agent:"
-        value: "agent:"
+      - type: prefix         # step 1 outbound: prepend "minion:"
+        value: "minion:"
       - type: base64url      # step 2 outbound: base64url-encode the result
   encrypted_data_in:
     target:
@@ -170,13 +170,13 @@ mapping:
 **What happens at runtime:**
 
 - **Outbound** (encode `id` for transport):
-    1. `prefix` → `agent:abc123`
+    1. `prefix` → `minion:abc123`
     2. `base64url` → `YWdlbnQ6YWJjMTIz`
     3. Written to header `X-Session`
 - **Inbound** (decode `id` from transport):
     1. Read header `X-Session`: `YWdlbnQ6YWJjMTIz`
-    2. `base64url` decode → `agent:abc123`
-    3. `prefix` decode (strip `agent:`) → `abc123`
+    2. `base64url` decode → `minion:abc123`
+    3. `prefix` decode (strip `minion:`) → `abc123`
 
 :::note[Key takeaway]
 Think of transforms as function composition. Outbound: `T2(T1(value))`. Inbound: `T1⁻¹(T2⁻¹(received))`. Always list transforms in the outbound (encode) order.
@@ -188,7 +188,7 @@ Think of transforms as function composition. Outbound: `T2(T1(value))`. Inbound:
 When a channel has multiple enabled profiles, it must figure out which one applies to each request. A `profile_id` mapping entry places a hint in transport so the channel can skip brute-force matching.
 
 ```yaml
-# Implant sends: Header "X-Profile: p:5"  (hint for profile_id 5)
+# Minion sends: Header "X-Profile: p:5"  (hint for profile_id 5)
 
 profile_id: 5
 profile_label: http-with-hint
@@ -202,7 +202,7 @@ mapping:
       key: X-Profile
     transform:
       - type: prefix
-        value: "p:"         # implant sends "p:5", channel strips prefix to get "5"
+        value: "p:"         # minion sends "p:5", channel strips prefix to get "5"
   id:
     target:
       location: header
@@ -236,7 +236,7 @@ mapping:
 Sometimes `id` and `encrypted_data` are concatenated into a single transport value. `composite_in` replaces separate `id` + `encrypted_data_in` mappings. The `length_prefix` separator takes the first N bytes as `id`.
 
 ```yaml
-# Implant sends: POST /sync  Body is base64(16-byte-id + encrypted_data)
+# Minion sends: POST /sync  Body is base64(16-byte-id + encrypted_data)
 
 profile_id: 6
 profile_label: http-composite-length
@@ -265,7 +265,7 @@ mapping:
 - **Outbound** — channel base64-encodes `encrypted_data` and writes to body (no `id` on outbound).
 
 :::note[Key takeaway]
-`composite_in` is useful when the implant packs both fields into a single blob. Note that `target.key` is omitted — the mapping targets the entire body.
+`composite_in` is useful when the minion packs both fields into a single blob. Note that `target.key` is omitted — the mapping targets the entire body.
 :::
 ---
 
@@ -274,7 +274,7 @@ mapping:
 Alternative to length prefix: split on a delimiter character.
 
 ```yaml
-# Implant sends: POST /sync  Body is base64(<id>||<encrypted_data>)
+# Minion sends: POST /sync  Body is base64(<id>||<encrypted_data>)
 # "||" separates the two fields
 
 profile_id: 7
@@ -307,7 +307,7 @@ mapping:
 
 ### 8. Custom action — redirect
 
-Custom actions change what the channel does after decoding. `redirect` sends the implant to alternate infrastructure instead of processing locally.
+Custom actions change what the channel does after decoding. `redirect` sends the minion to alternate infrastructure instead of processing locally.
 
 ```yaml
 profile_id: 8
@@ -334,7 +334,7 @@ mapping:
 
 - **Inbound** — channel decodes `id` and `encrypted_data` from query params as usual, but instead of calling C2 sync, it returns an HTTP 302 redirect to the edge URL.
 - The `params` block is entirely channel-defined — `redirect` is not a standard action.
-- `encrypted_data_out` is omitted because redirect action does not return data to the implant.
+- `encrypted_data_out` is omitted because redirect action does not return data to the minion.
 
 ---
 
@@ -372,10 +372,10 @@ mapping:
 
 ### 10. Adding noise — decoy fields
 
-Noise fields are transport-level decoys that carry no operational data. They make C2 traffic blend with legitimate traffic by adding extra headers, query parameters, or body fields. Inbound noise is added by the implant and naturally ignored by the channel (it only reads `mapping` fields). Outbound noise is injected by the channel into responses.
+Noise fields are transport-level decoys that carry no operational data. They make C2 traffic blend with legitimate traffic by adding extra headers, query parameters, or body fields. Inbound noise is added by the minion and naturally ignored by the channel (it only reads `mapping` fields). Outbound noise is injected by the channel into responses.
 
 ```yaml
-# Implant sends: POST /api/data
+# Minion sends: POST /api/data
 #   Header "X-Request-ID: <id>"
 #   Header "X-Trace-ID: <uuid>"          ← inbound noise
 #   Query  "_ref=<random>"               ← inbound noise
@@ -430,11 +430,11 @@ noise:
 
 **What happens at runtime:**
 
-- **Inbound** — implant generates a random UUID for `X-Trace-ID` header and a random 8-char string for `_ref` query param before sending. Channel only reads fields defined in `mapping` and naturally ignores the noise — no extra processing required.
-- **Outbound** — channel encodes `encrypted_data` into the response body as usual, then injects a random `X-Cache-Status` header picked from the values list. Implant ignores this header.
+- **Inbound** — minion generates a random UUID for `X-Trace-ID` header and a random 8-char string for `_ref` query param before sending. Channel only reads fields defined in `mapping` and naturally ignores the noise — no extra processing required.
+- **Outbound** — channel encodes `encrypted_data` into the response body as usual, then injects a random `X-Cache-Status` header picked from the values list. Minion ignores this header.
 
 :::note[Key takeaway]
-`noise` is a sibling to `mapping`. It defines decoy fields per direction. Inbound noise is purely implant-side — the channel ignores it naturally. Outbound noise is injected by the channel. Noise keys must not collide with mapping keys.
+`noise` is a sibling to `mapping`. It defines decoy fields per direction. Inbound noise is purely minion-side — the channel ignores it naturally. Outbound noise is injected by the channel. Noise keys must not collide with mapping keys.
 :::
 ---
 
@@ -461,7 +461,7 @@ mapping:
       key: X-Api-Version
     transform:
       - type: prefix
-        value: "v"           # implant sends "v100", channel extracts "100"
+        value: "v"           # minion sends "v100", channel extracts "100"
   id:
     target:
       location: body

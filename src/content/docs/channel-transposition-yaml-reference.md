@@ -1,5 +1,5 @@
 ---
-title: "Obfuscation Profile YAML Reference"
+title: "Transposition Profile YAML Reference"
 ---
 
 > **Status:** this reference describes the target spec. Individual channel implementations may not support every field yet (for example `action`) until implementation catches up.
@@ -96,15 +96,15 @@ Channels may define additional custom actions (e.g., `redirect`). Custom action 
 - `profile_id` (optional)
   - used to read/write hint
 - `id` (required unless `composite_in` is used)
-  - inbound only (implant -> channel -> c2); outbound responses do not carry `id`
+  - inbound only (minion -> channel -> server); outbound responses do not carry `id`
 - `encrypted_data_in` (required unless `composite_in` is used)
-  - inbound encrypted payload mapping (implant -> channel -> c2)
+  - inbound encrypted payload mapping (minion -> channel -> server)
 - `composite_in` (optional; replaces `id` + `encrypted_data_in`)
   - single transport value carrying both `id` and `encrypted_data` concatenated together
   - requires `separator` to define how fields are split/joined
 - `encrypted_data_out` (required for actions that return data)
-  - outbound encrypted payload mapping (c2 -> channel -> implant); outbound carries only `encrypted_data`
-  - may be omitted when the action does not return data to the implant (e.g., `redirect`)
+  - outbound encrypted payload mapping (server -> channel -> minion); outbound carries only `encrypted_data`
+  - may be omitted when the action does not return data to the minion (e.g., `redirect`)
 
 Each mapping entry supports:
 
@@ -132,8 +132,8 @@ Supported transform types (v1):
 
 `noise`:
 
-- `inbound[]` (optional): list of noise entries that the implant adds to requests. The channel does not process inbound noise — it only extracts fields defined in `mapping` and naturally ignores everything else.
-- `outbound[]` (optional): list of noise entries that the channel injects into responses. Implant ignores these.
+- `inbound[]` (optional): list of noise entries that the minion adds to requests. The channel does not process inbound noise — it only extracts fields defined in `mapping` and naturally ignores everything else.
+- `outbound[]` (optional): list of noise entries that the channel injects into responses. Minion ignores these.
 
 Each noise entry:
 
@@ -176,9 +176,9 @@ noise:
 
 ### Direction semantics
 
-- **Inbound noise**: implant generates and adds these decoy fields to its requests. The channel does not need to process, strip, or validate inbound noise — it only reads fields defined in `mapping` and naturally ignores everything else. Inbound noise definitions in the profile serve as a contract for the implant.
-- **Outbound noise**: channel generates and injects these fields into the response. Implant ignores them on receive.
-- Noise generation happens per-request (inbound: implant-side, outbound: channel-side). Each request/response gets fresh random values.
+- **Inbound noise**: minion generates and adds these decoy fields to its requests. The channel does not need to process, strip, or validate inbound noise — it only reads fields defined in `mapping` and naturally ignores everything else. Inbound noise definitions in the profile serve as a contract for the minion.
+- **Outbound noise**: channel generates and injects these fields into the response. Minion ignores them on receive.
+- Noise generation happens per-request (inbound: minion-side, outbound: channel-side). Each request/response gets fresh random values.
 
 ### Noise and profile matching
 
@@ -205,8 +205,8 @@ transform:
 
 Order semantics:
 
-- **Outbound** (`channel -> implant`): apply in listed order `T1 -> T2 -> T3`.
-- **Inbound** (`implant -> channel`): apply in reverse order `T3 -> T2 -> T1`.
+- **Outbound** (`channel -> minion`): apply in listed order `T1 -> T2 -> T3`.
+- **Inbound** (`minion -> channel`): apply in reverse order `T3 -> T2 -> T1`.
 
 Think of it as function composition:
 
@@ -234,7 +234,7 @@ transform:
 
 ### 1) `base64`
 
-Use case: implant sends ASCII-safe payload; channel decodes to canonical value.
+Use case: minion sends ASCII-safe payload; channel decodes to canonical value.
 
 ```yaml
 transform:
@@ -242,16 +242,16 @@ transform:
 ```
 
 Inbound (decode in channel):
-- implant sent: `Y2lwaGVyX2Jsb2I=`
+- minion sent: `Y2lwaGVyX2Jsb2I=`
 - channel canonical value: `cipher_blob`
 
 Outbound (encode in channel):
 - channel canonical value: `resp:cipher_blob`
-- sent to implant: `cmVzcDpjaXBoZXJfYmxvYg==`
+- sent to minion: `cmVzcDpjaXBoZXJfYmxvYg==`
 
 ### 2) `base64url`
 
-Use case: implant/channel exchange data through URL-safe fields.
+Use case: minion/channel exchange data through URL-safe fields.
 
 ```yaml
 transform:
@@ -259,16 +259,16 @@ transform:
 ```
 
 Inbound:
-- implant sent: `aGVsbG8vd29ybGQ`
+- minion sent: `aGVsbG8vd29ybGQ`
 - channel canonical value: `hello/world`
 
 Outbound:
 - channel canonical value: `hello/world`
-- sent to implant: `aGVsbG8vd29ybGQ`
+- sent to minion: `aGVsbG8vd29ybGQ`
 
 ### 3) `prefix`
 
-Use case: implant prepends marker; channel strips by decode path.
+Use case: minion prepends marker; channel strips by decode path.
 
 ```yaml
 transform:
@@ -277,16 +277,16 @@ transform:
 ```
 
 Inbound:
-- implant sent: `tg:abc123`
+- minion sent: `tg:abc123`
 - channel canonical value: `abc123`
 
 Outbound:
 - channel canonical value: `abc123`
-- sent to implant: `tg:abc123`
+- sent to minion: `tg:abc123`
 
 ### 4) `suffix`
 
-Use case: implant appends marker; channel strips by decode path.
+Use case: minion appends marker; channel strips by decode path.
 
 ```yaml
 transform:
@@ -295,16 +295,16 @@ transform:
 ```
 
 Inbound:
-- implant sent: `abc123::end`
+- minion sent: `abc123::end`
 - channel canonical value: `abc123`
 
 Outbound:
 - channel canonical value: `abc123`
-- sent to implant: `abc123::end`
+- sent to minion: `abc123::end`
 
 ### 5) `replace`
 
-Use case: implant applies character substitution; channel reverses it in decode path.
+Use case: minion applies character substitution; channel reverses it in decode path.
 
 **Constraint:** `replace` is only safe when the `to` character is guaranteed not to appear in the input value. If both `from` and `to` characters can appear in the data, the inbound reversal is lossy. When applying `replace` to `encrypted_data`, always pair it with a prior encoding transform (e.g., `base64url`) that eliminates the ambiguous character first.
 
@@ -316,12 +316,12 @@ transform:
 ```
 
 Inbound:
-- implant sent: `a_b_c`
+- minion sent: `a_b_c`
 - channel canonical value: `a/b/c`
 
 Outbound:
 - channel canonical value: `a/b/c`
-- sent to implant: `a_b_c`
+- sent to minion: `a_b_c`
 
 ### 6) `url_encode`
 
@@ -333,16 +333,16 @@ transform:
 ```
 
 Inbound (channel decode counterpart):
-- implant sent: `a+b%26c%3Dd`
+- minion sent: `a+b%26c%3Dd`
 - channel canonical value: `a b&c=d`
 
 Outbound:
 - channel canonical value: `a b&c=d`
-- sent to implant: `a+b%26c%3Dd`
+- sent to minion: `a+b%26c%3Dd`
 
 ## Action examples
 
-For an extensive collection of complete profile examples with runtime walkthroughs, see [Obfuscation Profile Examples](../channel-obfuscation-examples/).
+For an extensive collection of complete profile examples with runtime walkthroughs, see [Transposition Profile Examples](../channel-transposition-examples/).
 
 ### Standard action: `sync` (HTTP channel)
 

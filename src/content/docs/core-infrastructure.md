@@ -54,7 +54,7 @@ graph TD
 
 ## MongoDB — Persistence Layer
 
-- **Role**: durable storage for operator accounts, agent registrations, task history, session state, audit logs, and obfuscation profile YAML documents.
+- **Role**: durable storage for operator accounts, minion registrations, task history, session state, audit logs, and transposition profile YAML documents.
 - **Why MongoDB**: schema-flexible document model maps well to YAML profile storage and semi-structured audit/event data. Supports evolving MVP contracts without rigid schema migrations.
 - **Connections**: Core Server is the primary read/write client.
 
@@ -88,7 +88,7 @@ MongoDB resolves the database engine decision listed as pending in the
 | Channel Modules | RabbitMQ | AMQP | Profile management RPC, event publishing |
 | Translator Modules | RabbitMQ | AMQP | Translation coordination |
 | Minion Providers | RabbitMQ | AMQP | Build coordination |
-| Channel Modules | Core Server | HTTP | Implant sync (`POST /api/channel/sync`) |
+| Channel Modules | Core Server | HTTP | Minion sync (`POST /api/channel/sync`) |
 | Core Server | MongoDB | MongoDB wire protocol | State persistence, audit logs |
 | Core Server | SeaweedFS | HTTP (S3-compatible) | Artifact storage and retrieval |
 | Minion Providers | SeaweedFS | HTTP (S3-compatible) | Artifact upload |
