@@ -58,7 +58,7 @@ title: "Architecture Draft"
 
 ## Pending Decisions
 
-1. RabbitMQ exchange/queue naming conventions and routing-key strategy.
-2. Message contract format and versioning policy.
-3. Database engine and schema partitioning strategy.
+1. ~~RabbitMQ exchange/queue naming conventions and routing-key strategy.~~ Resolved in [ADR-0002](../adr/0002-amqp-contract-conventions/) — see [AMQP Routing Conventions](../contracts/amqp-conventions/).
+2. ~~Message contract format and versioning policy.~~ Resolved in [ADR-0002](../adr/0002-amqp-contract-conventions/) — see [AMQP Message Envelope](../contracts/amqp-envelope/).
+3. ~~Database engine and schema partitioning strategy.~~ Resolved — see [Core Infrastructure](../core-infrastructure/) (MongoDB).
 4. Module packaging and lifecycle policy (enable/disable/version compatibility).

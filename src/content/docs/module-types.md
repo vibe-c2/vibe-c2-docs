@@ -104,10 +104,13 @@ Crypto boundary rules:
 - Minion payload crypto (`encrypt/decrypt/verify/sign`) belongs to core C2 services.
 - Channel modules must be plaintext-blind and process only routing metadata + encrypted blobs.
 
-## Suggested Next Step
+## Contracts
 
-Create an ADR that freezes:
+The wire-level contracts these modules use are specified in the
+[Contracts](../contracts/overview/) section:
 
-1. Base message envelope format (`message_id`, `correlation_id`, `type`, `version`, `payload`, `timestamp`).
-2. Exchange/queue naming convention.
-3. Ownership boundaries between channel and minion-factory modules.
+1. Base message envelope and versioning — [ADR-0002](../adr/0002-amqp-contract-conventions/) / [AMQP Message Envelope](../contracts/amqp-envelope/).
+2. Exchange/queue naming convention — [AMQP Routing Conventions](../contracts/amqp-conventions/).
+3. The first concrete module↔core contract — [Channel ↔ Core: Profile RPC](../contracts/channel-core-rpc/).
+
+Still open: minion-factory build-coordination contract, and module packaging/lifecycle policy.

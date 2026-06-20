@@ -51,9 +51,16 @@ graph TD
 
 ## MongoDB — Persistence Layer
 
-- **Role**: durable storage for operator accounts, minion registrations, task history, session state, audit logs, and transposition profile YAML documents.
-- **Why MongoDB**: schema-flexible document model maps well to YAML profile storage and semi-structured audit/event data. Supports evolving MVP contracts without rigid schema migrations.
+- **Role**: durable storage for operator accounts, minion registrations, task history, session state, and audit logs.
+- **Why MongoDB**: schema-flexible document model maps well to semi-structured audit/event data. Supports evolving MVP contracts without rigid schema migrations.
 - **Connections**: Core Server is the primary read/write client.
+
+:::note
+MongoDB does **not** store transposition profiles. Each channel module owns its
+profiles as YAML files on local disk, persisted with Docker volumes. Core manages
+them only through the [profile RPC contract](../contracts/channel-core-rpc/). See
+[ADR-0002](../adr/0002-amqp-contract-conventions/).
+:::
 
 :::note
 MongoDB resolves the database engine decision listed as pending in the

@@ -36,10 +36,13 @@ A profile also defines channel behavior through an `action` object — `action.t
 
 ## Profile storage and ownership
 
-- Profiles are persisted in durable storage.
-- Profile format is YAML.
-- Channel module owns runtime loading, validation, and execution of profiles.
-- Core C2 owns management UX/API and policy decisions.
+- Profiles are stored as YAML files on the channel module's local disk.
+- Persistence across restarts/redeploys uses Docker volumes mounted at the
+  channel's profile directory — there is no central profile database.
+- Channel module owns runtime loading, validation, and execution of profiles,
+  and is the system-of-record for them.
+- Core C2 owns management UX/API and policy decisions, driven over the
+  [profile RPC contract](../contracts/channel-core-rpc/).
 
 ## YAML Specification
 

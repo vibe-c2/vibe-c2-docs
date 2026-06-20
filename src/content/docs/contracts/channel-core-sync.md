@@ -1,8 +1,11 @@
 ---
-title: "Message Contracts"
+title: "Channel ↔ Core: HTTP Sync"
 ---
 
-This page defines HTTP sync contracts for minion communication between channel and core Server.
+This is the **data-plane** contract between a channel module and the core Server.
+It carries minion traffic as opaque encrypted blobs over HTTP. For the
+control-plane (profile management) contract between the same parties, see
+[Channel ↔ Core: Profile RPC](../channel-core-rpc/).
 
 ## Model
 

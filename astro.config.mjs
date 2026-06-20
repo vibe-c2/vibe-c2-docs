@@ -63,7 +63,6 @@ export default defineConfig({
           label: "Channels",
           items: [
             { slug: "message-flow" },
-            { slug: "message-contracts" },
             { slug: "channel-transposition-profiles" },
             { slug: "channel-transposition-yaml-reference" },
             { slug: "channel-transposition-examples" },
@@ -71,10 +70,21 @@ export default defineConfig({
           ],
         },
         {
+          label: "Contracts",
+          items: [
+            { slug: "contracts/overview" },
+            { slug: "contracts/amqp-envelope" },
+            { slug: "contracts/amqp-conventions" },
+            { slug: "contracts/channel-core-sync" },
+            { slug: "contracts/channel-core-rpc" },
+          ],
+        },
+        {
           label: "ADR",
           items: [
             { slug: "adr" },
             { slug: "adr/0001-golang-channel-core-foundation" },
+            { slug: "adr/0002-amqp-contract-conventions" },
           ],
         },
       ],
