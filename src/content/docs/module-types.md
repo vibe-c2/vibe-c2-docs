@@ -58,6 +58,31 @@ Minion provider modules define minion families and lifecycle behavior.
 - .NET minion provider
 - Python minion provider
 
+### Optional Translator Hooks
+
+By default, the preprocess/postprocess responsibilities above map directly
+between the normalized C2 model and the minion wire format. A provider that
+wants a **custom language for its minions** may optionally implement translator
+hooks to insert its own intermediate representation:
+
+- `translate_outbound` — convert a normalized C2 command intent into the
+  provider's custom minion language before it is serialized to wire format.
+- `translate_inbound` — convert a raw minion response in the provider's custom
+  language back into the normalized C2 result schema.
+
+Hooks are an implementation detail **owned entirely by the provider** — they are
+not a separate module or deployable. Providers that need no custom language
+simply omit them and rely on the default direct mapping.
+
+Guidance for providers that implement them:
+
+- Translator hooks run inside the provider, a core-side processing layer that
+  operates on already-decrypted plaintext. They never cross the channel trust
+  boundary and never touch payload crypto.
+- Keep hooks deterministic and test-heavy.
+- Make the mapping explicit; avoid hidden heuristic behavior in critical paths.
+- Version the custom language alongside the provider's command contracts.
+
 ### Notes
 
 - Keep provider-specific command grammar encapsulated.
