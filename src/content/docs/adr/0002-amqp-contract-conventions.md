@@ -40,7 +40,7 @@ are ULIDs; timestamps are UTC RFC3339. Full field semantics live in
 
 ### 2. Routing conventions
 
-- Direct exchanges for RPC: `vibe.channel.rpc`, `vibe.factory.rpc`.
+- Direct exchanges for RPC: `vibe.core.rpc`, `vibe.channel.rpc`, `vibe.factory.rpc`.
 - Topic exchange for events: `vibe.events`.
 - Per-instance request queues `vibe.<module-type>.rpc.<instance>` keyed by
   `<instance>`.
@@ -53,8 +53,16 @@ Full strategy lives in [AMQP Routing Conventions](../../contracts/amqp-conventio
 
 ### 3. RPC ownership direction
 
-For module management RPC, **core is the client** and the **module is the
-server**. The module exposes operations on its own queue; core invokes them.
+Ownership is **per-operation**; the control plane is bidirectional. For module
+**management** RPC (e.g. profile operations), core is the client and the module
+is the server. For **lifecycle** RPC (register/heartbeat/deregister), the module
+is the client and core is the server on `vibe.core.rpc`.
+
+:::note[Superseded]
+An earlier revision of this ADR stated module RPC was one-directional (core
+always client). That is corrected here and detailed in
+[ADR-0003](../0003-module-registration-lifecycle/).
+:::
 
 ### 4. Channel profiles are channel-owned, on-disk
 

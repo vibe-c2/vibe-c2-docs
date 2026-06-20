@@ -93,6 +93,7 @@ Guidance for factories that implement them:
 
 All module types should:
 
+- Register with core on startup and heartbeat for liveness via the [Module Lifecycle](../contracts/module-lifecycle/) contract.
 - Communicate through RabbitMQ channels using versioned message schemas.
 - Include correlation IDs for traceability across services.
 - Be independently deployable/replaceable in Docker Compose stacks.

@@ -45,13 +45,13 @@ graph TD
 
 ## RabbitMQ — Message Bus
 
-- **Role**: asynchronous communication backbone between core server and all modules. Carries control-plane RPC (e.g. transposition profile CRUD), event notifications, and module coordination messages. Does **not** carry minion traffic — that flows via the HTTP sync endpoint.
+- **Role**: asynchronous communication backbone between core server and all modules. Carries bidirectional control-plane RPC — module lifecycle (register/heartbeat/deregister, module→core) and management (e.g. transposition profile CRUD, core→module) — plus event notifications and coordination messages. Does **not** carry minion traffic — that flows via the HTTP sync endpoint.
 - **Why RabbitMQ**: mature AMQP broker with exchange/queue routing patterns suited to module-type-based message routing, dead-letter queues for reliability ([FR-05](../tech-requirements/)), and per-queue ACLs for trust boundary enforcement.
 - **Connections**: Core Server (publisher/consumer), Channel Modules, Minion Factory Modules — all communicate over AMQP.
 
 ## MongoDB — Persistence Layer
 
-- **Role**: durable storage for operator accounts, minion registrations, task history, session state, and audit logs.
+- **Role**: durable storage for operator accounts, minion registrations, the **module registry** (registered channel/factory instances and their lifecycle state), task history, session state, and audit logs.
 - **Why MongoDB**: schema-flexible document model maps well to semi-structured audit/event data. Supports evolving MVP contracts without rigid schema migrations.
 - **Connections**: Core Server is the primary read/write client.
 

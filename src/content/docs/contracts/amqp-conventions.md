@@ -14,6 +14,7 @@ the platform on a shared broker.
 
 | Exchange | Type | Purpose |
 |---|---|---|
+| `vibe.core.rpc` | `direct` | Module → core RPC requests (lifecycle: register/heartbeat/deregister). |
 | `vibe.channel.rpc` | `direct` | Core → channel RPC requests (profile management). |
 | `vibe.factory.rpc` | `direct` | Core ↔ minion-factory RPC (build coordination). |
 | `vibe.events` | `topic` | Module → core event notifications (fan-in). |
@@ -24,10 +25,34 @@ to event classes with wildcards.
 
 ## RPC: request/reply
 
-Core is the RPC **client**; the module is the RPC **server**. Each module
-instance owns a durable request queue and consumes from it.
+RPC ownership is **per-operation** — the control plane runs in both directions.
+The party that *receives* an operation is the RPC **server** and owns a durable
+request queue; the *caller* is the RPC **client**.
 
-### Request queue
+| Operation class | Client | Server (owns queue) |
+|---|---|---|
+| Lifecycle (`module.*`) | module | **core** — `vibe.core.rpc` |
+| Management (`transposition.profile.*`, ...) | core | **module** — `vibe.<module-type>.rpc.<instance>` |
+
+A module learns *its own* server queue name by convention (below); core learns a
+module's server queue from the `rpc_queue` field the module sends at
+[registration](../module-lifecycle/#moduleregister). Both directions reply via
+the same direct reply-to mechanism, with the caller setting `reply_to`.
+
+### Core request queue
+
+Core's lifecycle server uses a single shared queue with competing consumers
+across core instances:
+
+```
+vibe.core.rpc
+```
+
+bound to exchange `vibe.core.rpc` with routing key `core`.
+
+### Module request queue
+
+Each module instance owns a durable request queue and consumes from it:
 
 ```
 vibe.<module-type>.rpc.<instance>
@@ -108,9 +133,10 @@ Core binds subscriber queues with wildcards:
 
 | Kind | Pattern | Example |
 |---|---|---|
-| RPC exchange | `vibe.<surface>.rpc` | `vibe.channel.rpc` |
-| RPC request queue | `vibe.<module-type>.rpc.<instance>` | `vibe.channel.rpc.http-1` |
-| RPC routing key | `<instance>` | `http-1` |
+| RPC exchange | `vibe.<surface>.rpc` | `vibe.channel.rpc`, `vibe.core.rpc` |
+| Core RPC queue | `vibe.core.rpc` (routing key `core`) | `vibe.core.rpc` |
+| Module RPC request queue | `vibe.<module-type>.rpc.<instance>` | `vibe.channel.rpc.http-1` |
+| Module RPC routing key | `<instance>` | `http-1` |
 | Event exchange | `vibe.events` | `vibe.events` |
 | Event routing key | `<module-type>.<instance>.<event>` | `channel.http-1.profile.activated` |
 | Dead-letter exchange | `vibe.dlx` | `vibe.dlx` |

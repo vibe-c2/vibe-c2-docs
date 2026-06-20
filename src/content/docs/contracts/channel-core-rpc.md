@@ -13,11 +13,22 @@ contract between the same parties, see
 
 ## Roles and ownership
 
+For **these management operations**, the direction is core→channel (the control
+plane as a whole is bidirectional — lifecycle runs the other way, see
+[Module Lifecycle](../module-lifecycle/)):
+
 - **Core is the RPC client.** It owns the management UX/API and policy decisions
   and issues profile operations on an operator's behalf.
 - **The channel is the RPC server.** It owns runtime loading, validation,
   execution, and **on-disk persistence** of its profiles, and is the
   system-of-record for them.
+
+:::note[Prerequisite]
+Core can only address a channel that has already registered. A channel sends
+[`module.register`](../module-lifecycle/#moduleregister) on startup — including
+the `rpc_queue` core should call it back on — before any profile RPC below can
+be issued.
+:::
 
 There is no central profile database. Each channel instance stores its profiles
 as YAML files on its own local disk. Persistence across restarts/redeploys is an
