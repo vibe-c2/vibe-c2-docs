@@ -9,15 +9,15 @@ title: "Tech Requirements"
 - The system must support operator login with secure credential handling.
 - The system must support role-based authorization for privileged operations.
 
-## FR-02: Agent Registration
+## FR-02: Minion Registration
 
-- The system must support controlled agent enrollment.
-- The system must persist agent identity metadata and health status.
+- The system must support controlled minion enrollment.
+- The system must persist minion identity metadata and health status.
 
 ## FR-03: Tasking and Result Flow
 
-- Operators must be able to create and queue tasks.
-- Agents must poll, execute tasks, and return results reliably.
+- Operators must be able to create and queue tasks for minions.
+- Minions must poll, execute tasks, and return results reliably.
 - The system must retain task history with timestamps.
 
 ## FR-04: Modular Service Architecture
@@ -34,23 +34,23 @@ title: "Tech Requirements"
 - Queue topology must support routing by message type and module responsibility.
 - Critical message flows must support acknowledgements and retry/dead-letter behavior.
 
-## FR-06: Application-Layer Implant Encryption
+## FR-06: Application-Layer Minion Encryption
 
-- Implant/session-to-C2 payloads must be encrypted at application level end-to-end.
-- Channel modules must not decrypt implant payloads.
+- Minion-to-Server payloads must be encrypted at application level end-to-end.
+- Channel modules must not decrypt minion payloads.
 - Channel modules may process only minimal routing metadata (`id`, channel metadata) and encrypted blobs.
-- Channel modules act as transport-only relays and must not own C2 protocol semantics.
-- Core C2 services must resolve key material/context using `id` and perform decrypt/verify.
+- Channel modules act as transport-only relays and must not own Server protocol semantics.
+- Core Server services must resolve key material/context using `id` and perform decrypt/verify.
 
-## FR-07: Channel Obfuscation Profiles
+## FR-07: Channel Transposition Profiles
 
-- Channel modules must support multiple enabled obfuscation profiles per channel.
-- Profiles must define mapping/obfuscation rules for `profile_id` (optional hint), `id`, and `encrypted_data` in transport fields.
+- Channel modules must support multiple enabled transposition profiles per channel.
+- Profiles must define mapping/transposition rules for `profile_id` (optional hint), `id`, and `encrypted_data` in transport fields.
 - Profiles must be persisted in storage as YAML documents.
 - Channel modules must expose RabbitMQ RPC management actions for profile CRUD/activation/validation.
 - Channel must brute-force all enabled profiles when hint is absent or invalid.
 
-## FR-08: Obfuscation Match Resolution and Performance
+## FR-08: Transposition Match Resolution and Performance
 
 - On inbound, channel should first resolve profile by transport `profile_id` hint when available.
 - If hint is absent/invalid, channel must select profile by matching enabled profiles and decoding to canonical fields.
@@ -69,8 +69,8 @@ title: "Tech Requirements"
 ## NFR-01: Security
 
 - All control-plane traffic must use encryption in transit.
-- Implant payload confidentiality/integrity must be enforced with application-layer encryption.
-- Decryption keys must be isolated to core C2 services (not channel modules).
+- Minion payload confidentiality/integrity must be enforced with application-layer encryption.
+- Decryption keys must be isolated to core Server services (not channel modules).
 - Secrets must not be stored in plaintext.
 - Authentication events must be auditable.
 
@@ -99,6 +99,6 @@ title: "Tech Requirements"
 
 ## Open Questions
 
-1. Expected maximum number of concurrent agents for MVP?
+1. Expected maximum number of concurrent minions for MVP?
 2. Required persistence technology and retention window?
 3. Required authentication providers for operators?

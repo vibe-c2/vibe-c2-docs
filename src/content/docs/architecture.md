@@ -13,19 +13,19 @@ title: "Architecture Draft"
 
 ## Communication Ownership Model
 
-- The logical conversation is **implant/session ↔ core C2**.
-- A channel module is only a transport relay between implant/session and core C2.
+- The logical conversation is **minion ↔ core Server**.
+- A channel module is only a transport relay between minion and core Server.
 - Channel modules shuffle opaque encrypted blobs plus minimal routing metadata (`id`).
-- Channel modules are not protocol peers for implant business logic and must stay plaintext-blind.
+- Channel modules are not protocol peers for minion business logic and must stay plaintext-blind.
 
 ## Communication Model
 
 - Modules do not call each other directly by default.
 - Core server and modules communicate over RabbitMQ channels.
-- Implant-to-C2 payloads are application-layer encrypted end-to-end.
-- Channel modules do not decrypt implant payloads; they relay metadata + encrypted blobs.
+- Minion-to-C2 payloads are application-layer encrypted end-to-end.
+- Channel modules do not decrypt minion payloads; they relay metadata + encrypted blobs.
 - Core exposes a dedicated channel sync HTTP endpoint (`POST /api/channel/sync`).
-- Channel->core implant traffic is request/response over HTTP.
+- Channel->core minion traffic is request/response over HTTP.
 - On inbound request, core returns an encrypted outbound payload in the same HTTP response (tasking may be embedded inside ciphertext).
 - Channel applies configurable obfuscation profiles to map transport fields <-> canonical fields (`id`, `encrypted_data`).
 - Profile management between core and channel uses RabbitMQ RPC control calls.
@@ -49,8 +49,8 @@ title: "Architecture Draft"
 ## Baseline Security Controls
 
 - Encrypted transport for all external/control-plane traffic.
-- Application-layer E2E encryption for implant payloads (`implant` ↔ `core C2`).
-- Decryption keys are available only to core C2 services.
+- Application-layer E2E encryption for minion payloads (`minion` ↔ `core Server`).
+- Decryption keys are available only to core Server services.
 - Channel modules operate as blind routers for encrypted blobs.
 - RBAC for all operator actions.
 - Queue access control per service/module in RabbitMQ.
