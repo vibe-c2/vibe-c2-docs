@@ -30,7 +30,7 @@ Pushes to `main` trigger `.github/workflows/deploy-docs.yml`, which builds with 
 
 ## Documentation Structure
 
-Content lives in `src/content/docs/` — English at the root, Ukrainian under `uk/` (e.g. `architecture.md` and `uk/architecture.md`). Every page needs a `title` in its frontmatter. The navigation hierarchy is defined in `astro.config.mjs` under the Starlight `sidebar` config (using page `slug`s) — always update it when adding or renaming pages, including the `translations` labels for Ukrainian.
+Content lives in `src/content/docs/` (English only; the site is single-locale with `defaultLocale: "root"`). Every page needs a `title` in its frontmatter. The navigation hierarchy is defined in `astro.config.mjs` under the Starlight `sidebar` config (using page `slug`s) — always update it when adding or renaming pages.
 
 - **Foundations** — Architecture, requirements, core responsibilities, module taxonomy, full-system message flow
 - **Channels** — Channel-specific message flow, contracts, obfuscation profiles (YAML reference), per-channel module docs (HTTP, Telegram), and the 15-minute channel authoring guide
