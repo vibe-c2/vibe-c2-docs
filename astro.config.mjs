@@ -87,6 +87,7 @@ export default defineConfig({
             { slug: "adr/0001-golang-channel-core-foundation" },
             { slug: "adr/0002-amqp-contract-conventions" },
             { slug: "adr/0003-module-registration-lifecycle" },
+            { slug: "adr/0004-distributed-tracing-minion-data-plane" },
           ],
         },
       ],
