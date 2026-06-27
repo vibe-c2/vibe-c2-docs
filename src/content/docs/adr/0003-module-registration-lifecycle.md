@@ -37,12 +37,16 @@ Ownership is per-operation:
 
 This supersedes the "RPC ownership direction" decision in ADR-0002.
 
-### 2. Self-assigned instance identity
+### 2. Module identity: `module_name` + `instance`
 
-A module picks its own `instance` id from its env/config and sends it at
-registration. Core does not mint ids. Re-registration of the same `instance`
-(e.g. after restart) is an **idempotent takeover**: core upserts the record and
-resumes; no duplicate, no error. Most recent registration wins.
+A registration carries two identity fields. `module_name` is the module's
+**hardcoded identity** — its project/kind (`http`, `telegram`, ...), baked into
+the implementation and shared by every running copy of that module. `instance`
+is the **unique id of one deployed instance**, self-assigned by the module from
+its env/config. Core mints neither. An operator may run several instances of the
+same `module_name`, each with a distinct `instance`. Re-registration of the same
+`instance` (e.g. after restart) is an **idempotent takeover**: core upserts the
+record and resumes; no duplicate, no error. Most recent registration wins.
 
 ### 3. Explicit heartbeat liveness
 

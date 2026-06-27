@@ -25,7 +25,7 @@ sequenceDiagram
     participant M as Module (starting up)
     participant CORE as Core (RPC server: vibe.core.rpc)
     M->>M: declare own RPC queue, start consuming
-    M->>CORE: module.register (type, instance, version, description, rpc_queue)
+    M->>CORE: module.register (type, name, instance, version, description, rpc_queue)
     CORE-->>M: ack (heartbeat_interval, bootstrap config)
     Note over CORE,M: core persists the registration → can now call the module
     loop every heartbeat_interval
@@ -71,6 +71,7 @@ Request:
 ```json
 {
   "module_type": "channel",
+  "module_name": "http",
   "instance": "http-1",
   "version": "1.2.0",
   "rpc_queue": "vibe.channel.rpc.http-1",
@@ -78,8 +79,14 @@ Request:
 }
 ```
 
-- `instance` is **self-assigned** by the module (from its own env/config). Core
-  does not mint it.
+- `module_name` is the module's **hardcoded identity** — its project/kind
+  (`http`, `dns`, `telegram`, `git`, ...), baked into the implementation and
+  shared by every running instance of that module. It is not operator-selectable.
+- `instance` is the **unique id of one deployed instance**, self-assigned by the
+  module (e.g. from its env/config). Core does not mint it. An operator may run
+  several instances of the same `module_name` (e.g. `http-channel-1`,
+  `http-channel-2`); each must carry a distinct `instance`, since heartbeat,
+  deregister, and management RPC all address a module by `instance` alone.
 - `rpc_queue` tells core which queue to use when it acts as client toward this
   module (see [routing conventions](../amqp-conventions/#rpc-requestreply)).
 - `description` is optional free-text the module reports about itself, surfaced
@@ -108,7 +115,7 @@ example after a restart — core upserts the existing record and resumes; it doe
 not create a duplicate and does not error. The most recent registration wins.
 
 Errors: `validation_failed` (malformed payload, or missing `module_type` /
-`instance` / `rpc_queue`), `unsupported_version` (the request envelope's
+`module_name` / `instance` / `rpc_queue`), `unsupported_version` (the request envelope's
 contract major version is one core does not serve — enforced at the transport
 layer for every RPC, not per-declared-contract).
 
