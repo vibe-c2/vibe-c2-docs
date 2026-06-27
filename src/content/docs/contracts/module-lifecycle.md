@@ -25,7 +25,7 @@ sequenceDiagram
     participant M as Module (starting up)
     participant CORE as Core (RPC server: vibe.core.rpc)
     M->>M: declare own RPC queue, start consuming
-    M->>CORE: module.register (type, instance, version, capabilities, rpc_queue)
+    M->>CORE: module.register (type, instance, version, description, rpc_queue)
     CORE-->>M: ack (heartbeat_interval, bootstrap config)
     Note over CORE,M: core persists the registration → can now call the module
     loop every heartbeat_interval
@@ -74,14 +74,7 @@ Request:
   "instance": "http-1",
   "version": "1.2.0",
   "rpc_queue": "vibe.channel.rpc.http-1",
-  "capabilities": {
-    "transport": "http",
-    "actions": ["sync", "proxy-pass"]
-  },
-  "supported_contracts": [
-    { "name": "transposition.profile", "version": "1.0" },
-    { "name": "inbound.minion_message", "version": "1.0" }
-  ]
+  "description": "HTTPS/DNS C2 channel — primary beacon listener."
 }
 ```
 
@@ -89,6 +82,8 @@ Request:
   does not mint it.
 - `rpc_queue` tells core which queue to use when it acts as client toward this
   module (see [routing conventions](../amqp-conventions/#rpc-requestreply)).
+- `description` is optional free-text the module reports about itself, surfaced
+  on the admin Modules page.
 
 Reply `payload`:
 
@@ -99,9 +94,6 @@ Reply `payload`:
   "heartbeat_interval_seconds": 30,
   "heartbeat_grace_misses": 3,
   "config": {
-    "expected_contracts": [
-      { "name": "transposition.profile", "version": "1.0" }
-    ],
     "policy": {},
     "feature_flags": {}
   }
@@ -115,8 +107,10 @@ management RPC to `rpc_queue`.
 example after a restart — core upserts the existing record and resumes; it does
 not create a duplicate and does not error. The most recent registration wins.
 
-Errors: `validation_failed` (malformed payload), `unsupported_version`
-(module declares a contract major version core cannot serve).
+Errors: `validation_failed` (malformed payload, or missing `module_type` /
+`instance` / `rpc_queue`), `unsupported_version` (the request envelope's
+contract major version is one core does not serve — enforced at the transport
+layer for every RPC, not per-declared-contract).
 
 ### `module.heartbeat`
 
